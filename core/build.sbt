@@ -1,6 +1,6 @@
 name := "core"
 
-scalaVersion := "2.10.1"
+scalaVersion := "2.10.2"
 
 libraryDependencies ++= Seq(
                     "joda-time" % "joda-time" % "2.2",

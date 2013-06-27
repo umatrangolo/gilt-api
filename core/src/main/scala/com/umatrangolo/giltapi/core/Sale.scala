@@ -14,7 +14,7 @@ case class Sale(
   key: String,
   store: Store,
   description: String,
-  url: String,
+  url: URL,
   begins: DateTime,
   ends: DateTime,
   images: Map[ImageKey, Image] = Map.empty[ImageKey, Image],
