@@ -10,4 +10,10 @@ trait Sales {
 
   def activeSales(store: Store): LinearSeq[Sale]
 
+  def upcomingSales(): LinearSeq[Sale]
+
+  def upcomingSales(store: Store): LinearSeq[Sale]
+
+  def sale(sale: String, store: Store): Option[Sale]
+
 }
