@@ -6,7 +6,7 @@ object GiltApiBuild extends Build {
   lazy val root = Project(
     id = "gilt-api",
     base = file(".")
-  ).aggregate(api, core, client)
+  ).dependsOn(core, api, client).aggregate(api, core, client)
 
   lazy val api = Project(
     id = "api",
