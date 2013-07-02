@@ -1,6 +1,6 @@
-package com.umatrangolo.giltapi.core
+package com.umatrangolo.giltapi.model
 
-import com.umatrangolo.giltapi.core.Store._
+import com.umatrangolo.giltapi.model.Store._
 
 import java.net.URL
 

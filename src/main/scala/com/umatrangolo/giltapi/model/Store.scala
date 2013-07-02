@@ -1,4 +1,4 @@
-package com.umatrangolo.giltapi.core
+package com.umatrangolo.giltapi.model
 
 object Store extends Enumeration {
   type Store = Value

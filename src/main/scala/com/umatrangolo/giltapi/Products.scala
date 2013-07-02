@@ -1,7 +1,7 @@
-package com.umatrangolo.giltapi.api
+package com.umatrangolo.giltapi
 
-import com.umatrangolo.giltapi.core.Product
-import com.umatrangolo.giltapi.core.Store._
+import com.umatrangolo.giltapi.model.Product
+import com.umatrangolo.giltapi.model.Store._
 
 import scala.collection.LinearSeq
 

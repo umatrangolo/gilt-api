@@ -1,6 +1,6 @@
-package com.umatrangolo.giltapi.core
+package com.umatrangolo.giltapi.model
 
-import com.umatrangolo.giltapi.core.InventoryStatus._
+import com.umatrangolo.giltapi.model.InventoryStatus._
 
 case class Sku(
   id: Int,

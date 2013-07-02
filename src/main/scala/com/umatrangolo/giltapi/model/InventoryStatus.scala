@@ -1,4 +1,4 @@
-package com.umatrangolo.giltapi.core
+package com.umatrangolo.giltapi.model
 
 object InventoryStatus extends Enumeration {
   type InventoryStatus = Value
