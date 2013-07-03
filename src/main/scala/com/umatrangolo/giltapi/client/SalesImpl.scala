@@ -5,10 +5,10 @@ import com.ning.http.client.AsyncHttpClientConfig._
 import com.ning.http.client.AsyncCompletionHandler
 import com.ning.http.client.Response
 
-import com.umatrangolo.giltapi.Sales
 import com.umatrangolo.giltapi.model.Sale
 import com.umatrangolo.giltapi.model.Store._
-
+import com.umatrangolo.giltapi.Sales
+import com.umatrangolo.giltapi.client.json._
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -18,6 +18,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.joda.JodaModule
 
 object NingSalesClientImpl {
   private[NingSalesClientImpl] val logger = LoggerFactory.getLogger(getClass)
@@ -37,16 +38,17 @@ case class NingConfig(
     """.format(isCompressionEnabled, isPoolingConnectionEnabled, requestTimeoutInMs).stripMargin
 }
 
-import scala.beans.BeanProperty
-
-case class SalesJsonResponse(@BeanProperty sales: java.util.ArrayList[Sale])
-
 object Json {
-  lazy val jsonMapper = new ObjectMapper()
+  lazy val jsonMapper = {
+    val mapper = new ObjectMapper()
+    mapper.registerModule(new JodaModule())
+    mapper
+  }
 }
 
 class NingSalesClientImpl(apiKey: String, ningConfig: NingConfig) extends Sales {
   import NingSalesClientImpl._
+  import com.umatrangolo.giltapi.client.utils.FutureConversions._
   import Json._
 
   require(apiKey != null, "The apiKey must be not null")
@@ -64,13 +66,15 @@ class NingSalesClientImpl(apiKey: String, ningConfig: NingConfig) extends Sales 
 
   override def activeSales: Future[LinearSeq[Sale]] = {
     asyncClient.prepareGet("https://api.gilt.com/v1/sales/active.json?apikey=%s".format(apiKey)).execute(new AsyncCompletionHandler[LinearSeq[Sale]]() {
-      override def onCompleted(response: com.ning.http.client.Response): LinearSeq[com.umatrangolo.giltapi.model.Sale] = {
-        val salesResponse: SalesJsonResponse = jsonMapper.readValue(response.getResponseBodyAsBytes(), classOf[SalesJsonResponse])
-        salesResponse.sales.asScala.toList
+      override def onCompleted(response: Response): LinearSeq[Sale] = {
+        try {
+          val salesJson: SalesJson = jsonMapper.readValue(response.getResponseBodyAsBytes(), classOf[SalesJson])
+          salesJson.sales.asScala.map { SaleJson.toSale(_) }.toList
+        } catch {
+          case e: Exception => throw new RuntimeException("Error while deserializing service response. Was:\n%s\n".format(response.getResponseBody))
+        }
       }
     })
-
-    Future { LinearSeq.empty[Sale] }
   }
 
   override def activeSales(store: Store): Future[LinearSeq[Sale]] = ???
