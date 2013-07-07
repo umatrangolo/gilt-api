@@ -27,6 +27,7 @@ object NingSalesClientImpl {
   private[NingSalesClientImpl] val logger = LoggerFactory.getLogger(getClass)
 }
 
+// TODO move out of here
 case class NingConfig(
   isCompressionEnabled: Boolean = true,
   isPoolingConnectionEnabled: Boolean = true,
@@ -41,6 +42,7 @@ case class NingConfig(
     """.format(isCompressionEnabled, isPoolingConnectionEnabled, requestTimeoutInMs).stripMargin
 }
 
+// TODO move out of here
 object Json {
   lazy val jsonMapper = {
     val mapper = new ObjectMapper()
@@ -49,6 +51,7 @@ object Json {
   }
 }
 
+// TODO Use a factory to build instances of this
 class NingSalesClientImpl(apiKey: String, ningConfig: NingConfig) extends Sales {
   import NingSalesClientImpl._
   import com.umatrangolo.giltapi.client.utils.FutureConversions._
@@ -66,43 +69,6 @@ class NingSalesClientImpl(apiKey: String, ningConfig: NingConfig) extends Sales 
     )
 
   logger.info("Ning Sales client impl created for api key: %s and Ning config: %s".format(apiKey, ningConfig))
-
-  protected def fetchSales(upcoming: Boolean = false)(store: Option[Store] = None): Future[LinearSeq[Sale]] = {
-    val request = new StringBuilder("https://api.gilt.com/v1/sales/")
-
-    store.foreach { s => request.append(s.toString) }
-    request.append("/").append({if (upcoming) "upcoming" else "active"})
-
-    request.append(".json?apikey=%s".format(apiKey))
-
-    asyncClient.prepareGet(request.toString).execute(new AsyncCompletionHandlerImplWithStdErrorHandling[LinearSeq[Sale]](
-      on200 = { r =>
-        try {
-          val salesJson: SalesJson = jsonMapper.readValue(r.getResponseBodyAsBytes(), classOf[SalesJson])
-          salesJson.sales.asScala.map { SaleJson.toSale(_) }.toList
-        } catch {
-          case e: Exception => throw new RuntimeException("Error while deserializing service response. Was:\nRequest:%s\nResponse:%s\n"
-            .format(request.toString, r.getResponseBody), e)
-        }
-      },
-      on404 = { r => LinearSeq.empty[Sale]}
-    ))
-
-    asyncClient.prepareGet(request.toString).execute(new AsyncCompletionHandler[LinearSeq[Sale]]() {
-      override def onCompleted(response: Response): LinearSeq[Sale] = {
-        try {
-          val salesJson: SalesJson = jsonMapper.readValue(response.getResponseBodyAsBytes(), classOf[SalesJson])
-          salesJson.sales.asScala.map { SaleJson.toSale(_) }.toList
-        } catch {
-          case e: Exception => throw new RuntimeException("Error while deserializing service response. Was:\nRequest:%s\nResponse:%s\n"
-            .format(request.toString, response.getResponseBody), e)
-        }
-      }
-    })
-  }
-
-  protected def fetchUpcomingSales = fetchSales(true) _
-  protected def fetchActiveSales = fetchSales(false) _
 
   override def activeSales: Future[LinearSeq[Sale]] = fetchActiveSales(None)
 
@@ -130,6 +96,33 @@ class NingSalesClientImpl(apiKey: String, ningConfig: NingConfig) extends Sales 
     ))
   }
 
+  protected def fetchSales(upcoming: Boolean = false)(store: Option[Store] = None): Future[LinearSeq[Sale]] = {
+    val request = new StringBuilder("https://api.gilt.com/v1/sales/")
+
+    store.foreach { s => request.append(s.toString) }
+    request.append("/").append({if (upcoming) "upcoming" else "active"})
+
+    request.append(".json?apikey=%s".format(apiKey))
+
+    asyncClient.prepareGet(request.toString).execute(new AsyncCompletionHandlerImplWithStdErrorHandling[LinearSeq[Sale]](
+      on200 = { r =>
+        try {
+          val salesJson: SalesJson = jsonMapper.readValue(r.getResponseBodyAsBytes(), classOf[SalesJson])
+          salesJson.sales.asScala.map { SaleJson.toSale(_) }.toList
+        } catch {
+          case e: Exception => throw new RuntimeException("Error while deserializing service response. Was:\nRequest:%s\nResponse:%s\n"
+            .format(request.toString, r.getResponseBody), e)
+        }
+      },
+      on404 = { r => LinearSeq.empty[Sale]}
+    ))
+  }
+
+  protected def fetchUpcomingSales = fetchSales(true) _
+
+  protected def fetchActiveSales = fetchSales(false) _
+
+  // TODO move out of here
   private class AsyncCompletionHandlerImpl[T](on200: (Response) => T, on401: (Response) => T, on404: (Response) => T,
     on500: (Response) => T, onUnrecognized: (Response) => T) extends AsyncCompletionHandler[T] {
     override def onCompleted(response: Response): T = response.getStatusCode match {
@@ -150,6 +143,7 @@ class NingSalesClientImpl(apiKey: String, ningConfig: NingConfig) extends Sales 
       onUnrecognized = { r => throw new GiltUnknownServerStatus(r.getStatusCode) }
     )
 
+  // TODO move out of here
   final class GiltUnauthorizedException extends RuntimeException("Unauthorized")
   final class GiltInternalServerError extends RuntimeException("Gilt Internal Server Error")
   final class GiltUnknownServerStatus(code: Int) extends RuntimeException("Unkown response code (was %s)".format(code))
