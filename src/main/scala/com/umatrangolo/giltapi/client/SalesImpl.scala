@@ -20,6 +20,9 @@ import scala.concurrent.Future
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.joda.JodaModule
 
+import com.ning.http.client.ListenableFuture
+import com.ning.http.client.HttpResponseStatus
+
 object NingSalesClientImpl {
   private[NingSalesClientImpl] val logger = LoggerFactory.getLogger(getClass)
 }
@@ -64,25 +67,90 @@ class NingSalesClientImpl(apiKey: String, ningConfig: NingConfig) extends Sales 
 
   logger.info("Ning Sales client impl created for api key: %s and Ning config: %s".format(apiKey, ningConfig))
 
-  override def activeSales: Future[LinearSeq[Sale]] = {
-    asyncClient.prepareGet("https://api.gilt.com/v1/sales/active.json?apikey=%s".format(apiKey)).execute(new AsyncCompletionHandler[LinearSeq[Sale]]() {
+  protected def fetchSales(upcoming: Boolean = false)(store: Option[Store] = None): Future[LinearSeq[Sale]] = {
+    val request = new StringBuilder("https://api.gilt.com/v1/sales/")
+
+    store.foreach { s => request.append(s.toString) }
+    request.append("/").append({if (upcoming) "upcoming" else "active"})
+
+    request.append(".json?apikey=%s".format(apiKey))
+
+    asyncClient.prepareGet(request.toString).execute(new AsyncCompletionHandlerImplWithStdErrorHandling[LinearSeq[Sale]](
+      on200 = { r =>
+        try {
+          val salesJson: SalesJson = jsonMapper.readValue(r.getResponseBodyAsBytes(), classOf[SalesJson])
+          salesJson.sales.asScala.map { SaleJson.toSale(_) }.toList
+        } catch {
+          case e: Exception => throw new RuntimeException("Error while deserializing service response. Was:\nRequest:%s\nResponse:%s\n"
+            .format(request.toString, r.getResponseBody), e)
+        }
+      },
+      on404 = { r => LinearSeq.empty[Sale]}
+    ))
+
+    asyncClient.prepareGet(request.toString).execute(new AsyncCompletionHandler[LinearSeq[Sale]]() {
       override def onCompleted(response: Response): LinearSeq[Sale] = {
         try {
           val salesJson: SalesJson = jsonMapper.readValue(response.getResponseBodyAsBytes(), classOf[SalesJson])
           salesJson.sales.asScala.map { SaleJson.toSale(_) }.toList
         } catch {
-          case e: Exception => throw new RuntimeException("Error while deserializing service response. Was:\n%s\n".format(response.getResponseBody))
+          case e: Exception => throw new RuntimeException("Error while deserializing service response. Was:\nRequest:%s\nResponse:%s\n"
+            .format(request.toString, response.getResponseBody), e)
         }
       }
     })
   }
 
-  override def activeSales(store: Store): Future[LinearSeq[Sale]] = ???
+  protected def fetchUpcomingSales = fetchSales(true) _
+  protected def fetchActiveSales = fetchSales(false) _
 
-  override def upcomingSales: Future[LinearSeq[Sale]] = ???
+  override def activeSales: Future[LinearSeq[Sale]] = fetchActiveSales(None)
 
-  override def upcomingSales(store: Store): Future[LinearSeq[Sale]] = ???
+  override def activeSales(store: Store): Future[LinearSeq[Sale]] = fetchActiveSales(Option(store))
 
-  override def sale(sale: String, store: Store): Future[Option[Sale]] = ???
+  override def upcomingSales: Future[LinearSeq[Sale]] = fetchUpcomingSales(None)
 
+  override def upcomingSales(store: Store): Future[LinearSeq[Sale]] = fetchUpcomingSales(Option(store))
+
+  override def sale(saleKey: String, store: Store): Future[Option[Sale]] = {
+    val request = new StringBuilder("https://api.gilt.com/v1/")
+      .append(store).append("/").append(saleKey).append("/detail.json?apikey=%s".format(apiKey))
+
+    asyncClient.prepareGet(request.toString).execute(new AsyncCompletionHandlerImplWithStdErrorHandling[Option[Sale]](
+      on200 = { r =>
+        try {
+          val saleJson: SaleJson = jsonMapper.readValue(r.getResponseBodyAsBytes(), classOf[SaleJson])
+          Option(SaleJson.toSale(saleJson))
+        } catch {
+          case e: Exception => throw new RuntimeException("Error while deserializing service response. Was:\nRequest:%s\nResponse:%s\n"
+            .format(request.toString, r.getResponseBody), e)
+        }
+      },
+      on404 = { r => None }
+    ))
+  }
+
+  private class AsyncCompletionHandlerImpl[T](on200: (Response) => T, on401: (Response) => T, on404: (Response) => T,
+    on500: (Response) => T, onUnrecognized: (Response) => T) extends AsyncCompletionHandler[T] {
+    override def onCompleted(response: Response): T = response.getStatusCode match {
+      case 200 => on200(response)
+      case 401 => on401(response)
+      case 404 => on404(response)
+      case 500 => on500(response)
+      case _ => onUnrecognized(response)
+    }
+  }
+
+  private class AsyncCompletionHandlerImplWithStdErrorHandling[T](on200: (Response) => T, on404: (Response) => T)
+    extends AsyncCompletionHandlerImpl[T](
+      on200,
+      on401 = { r => throw new GiltUnauthorizedException },
+      on404,
+      on500 = { r => throw new GiltInternalServerError },
+      onUnrecognized = { r => throw new GiltUnknownServerStatus(r.getStatusCode) }
+    )
+
+  final class GiltUnauthorizedException extends RuntimeException("Unauthorized")
+  final class GiltInternalServerError extends RuntimeException("Gilt Internal Server Error")
+  final class GiltUnknownServerStatus(code: Int) extends RuntimeException("Unkown response code (was %s)".format(code))
 }

@@ -1,13 +1,20 @@
 package com.umatrangolo.giltapi.client.utils
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder
 import com.google.common.util.concurrent.{ ListenableFuture => GuavaListenableFuture }
 
 import com.ning.http.client.{ ListenableFuture => NingListenableFuture }
 
 import scala.concurrent.{ Future, Promise }
 
+import scala.language.implicitConversions
+
 object FutureConversions {
-  private[this] val executor = java.util.concurrent.Executors.newCachedThreadPool()
+  private[this] val executor = java.util.concurrent.Executors.newCachedThreadPool(new ThreadFactoryBuilder()
+    .setDaemon(true)
+    .setNameFormat("gilt-api-intl-pool-%d")
+    .build
+  )
 
   implicit def ningListenableFuture2ScalaFuture[T](ningFuture: NingListenableFuture[T]): Future[T] = {
     val promise: Promise[T] = Promise[T]()
@@ -22,9 +29,9 @@ object FutureConversions {
             promise.failure(e)
         }
       }
-
-      promise.future
     }, executor)
+
+    promise.future
   }
 
   implicit def ningListenableFuture2GuavaFuture[T](ningFuture: NingListenableFuture[T]): GuavaListenableFuture[T] = ???

@@ -1,30 +1,26 @@
 package com.umatrangolo.giltapi.client.json
 
-import org.joda.time.DateTime
-import java.util.{ List => JList, Collections => JCollections }
-import java.net.URL
-import java.net.MalformedURLException
-import com.umatrangolo.giltapi.model._
-import scala.beans.BeanProperty
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonProperty
 
 import com.umatrangolo.giltapi.model.Store._
+import com.umatrangolo.giltapi.model._
 
-private[json] object Errors {
-  def notPresent(key: String) = throw new RuntimeException("Incorrect JSON: value for `%s` was not present".format(key))
-  def unrecognized(key: String, value: String) = throw new RuntimeException("Incorrect JSON: unrecognized value for `%s` (was %s)".format(key, value))
-}
+import java.net.MalformedURLException
+import java.net.URL
+import java.util.{ List => JList, Map => JMap, Collections => JCollections }
 
-import Errors._
+import org.joda.time.DateTime
+
+import scala.beans.BeanProperty
+import scala.collection.JavaConverters._
+import scala.collection.LinearSeq
 
 object StoreJson {
   private[this] val ValueSet = Store.values
 
-  def toStore(storeJson: String): Store = Option(storeJson).map { s =>
-    ValueSet.find { _.toString == s }.getOrElse { unrecognized("store", s) }
-  }.getOrElse {
-    notPresent("store")
+  def toStore(storeJson: String): Store = Option(storeJson).flatMap { s => ValueSet.find { _.toString == s } }.getOrElse {
+    throw new RuntimeException("Unsupported store (was %s)".format(storeJson))
   }
 }
 
@@ -37,9 +33,9 @@ final case class SaleJson(
   @BeanProperty @JsonProperty("description") description: String,
   @BeanProperty @JsonProperty("sale_url") sale_url: String,
   @BeanProperty @JsonProperty("begins") begins: DateTime,
-  @BeanProperty @JsonProperty("ends") ends: DateTime
-//  @BeanProperty @JsonProperty("image_urls") image_urls: JMap[String, JList[]] = JCollections.emptyList[String],
-//  @BeanProperty @JsonProperty("products") products: JList[String] = JCollections.emptyList[String]
+  @BeanProperty @JsonProperty("ends") ends: DateTime,
+  @BeanProperty @JsonProperty("image_urls") image_urls: JMap[String, JList[ImageJson]] = JCollections.emptyMap[String, JList[ImageJson]],
+  @BeanProperty @JsonProperty("products") products: JList[String] = JCollections.emptyList[String]
 )
 
 object SaleJson {
@@ -51,10 +47,35 @@ object SaleJson {
     Option(saleJson.description),
     new URL(saleJson.sale_url),
     saleJson.begins,
-    Option(saleJson.ends)
+    Option(saleJson.ends),
+    saleJson.image_urls.asScala.map { case (imageKey, imageJsons) =>
+      (ImageJson.toImageKey(imageKey) -> imageJsons.asScala.map { imageJson => ImageJson.toImage(imageJson) }.toList)
+    }.toMap,
+    Option(saleJson.products).map { ps => ps.asScala.toList.map { new URL(_) } }.getOrElse(LinearSeq.empty[URL])
   )
 }
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 final case class SalesJson(
   @BeanProperty @JsonProperty("sales") sales: JList[SaleJson] = JCollections.emptyList[SaleJson]
 )
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+final case class ImageJson(
+  @BeanProperty @JsonProperty("url") url: String,
+  @BeanProperty @JsonProperty("width") width: Int,
+  @BeanProperty @JsonProperty("height") height: Int
+)
+
+object ImageJson {
+  def toImage(imageJson: ImageJson): Image = Image(
+    new URL(imageJson.url),
+    imageJson.width,
+    imageJson.height
+  )
+
+  def toImageKey(imageKeyJson: String): ImageKey = imageKeyJson.trim.split("x").toList match {
+    case x :: y :: Nil => ImageKey(x.toInt, y.toInt)
+    case _ => throw new RuntimeException("Unsupported ImageKey format (was %s)".format(imageKeyJson))
+  }
+}
