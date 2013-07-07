@@ -5,9 +5,9 @@ import com.ning.http.client.AsyncHttpClientConfig._
 import com.ning.http.client.AsyncCompletionHandler
 import com.ning.http.client.Response
 
-import com.umatrangolo.giltapi.model.Sale
+import com.umatrangolo.giltapi.model._
 import com.umatrangolo.giltapi.model.Store._
-import com.umatrangolo.giltapi.Sales
+import com.umatrangolo.giltapi.{ Sales, Products }
 import com.umatrangolo.giltapi.client.json._
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -23,8 +23,8 @@ import com.fasterxml.jackson.datatype.joda.JodaModule
 import com.ning.http.client.ListenableFuture
 import com.ning.http.client.HttpResponseStatus
 
-object NingSalesClientImpl {
-  private[NingSalesClientImpl] val logger = LoggerFactory.getLogger(getClass)
+object NingClientImpl {
+  private[NingClientImpl] val logger = LoggerFactory.getLogger(getClass)
 }
 
 // TODO move out of here
@@ -52,8 +52,10 @@ object Json {
 }
 
 // TODO Use a factory to build instances of this
-class NingSalesClientImpl(apiKey: String, ningConfig: NingConfig) extends Sales {
-  import NingSalesClientImpl._
+// TODO split in a SalesClient and ProductClients by tearing apart this using traits and then
+// recomposing specific clients from them.
+class NingClientImpl(apiKey: String, ningConfig: NingConfig) extends Sales with Products {
+  import NingClientImpl._
   import com.umatrangolo.giltapi.client.utils.FutureConversions._
   import Json._
 
@@ -87,6 +89,40 @@ class NingSalesClientImpl(apiKey: String, ningConfig: NingConfig) extends Sales 
         try {
           val saleJson: SaleJson = jsonMapper.readValue(r.getResponseBodyAsBytes(), classOf[SaleJson])
           Option(SaleJson.toSale(saleJson))
+        } catch {
+          case e: Exception => throw new RuntimeException("Error while deserializing service response. Was:\nRequest:%s\nResponse:%s\n"
+            .format(request.toString, r.getResponseBody), e)
+        }
+      },
+      on404 = { r => None }
+    ))
+  }
+
+  override def allCategories: Future[LinearSeq[String]] = {
+    val request = "https://api.gilt.com/v1/products/categories.json?apikey=%s".format(apiKey)
+
+    asyncClient.prepareGet(request.toString).execute(new AsyncCompletionHandlerImplWithStdErrorHandling[LinearSeq[String]](
+      on200 = { r =>
+        try {
+          val categoriesJson = jsonMapper.readValue(r.getResponseBodyAsBytes(), classOf[CategoriesJson])
+          categoriesJson.categories.asScala.toList
+        } catch {
+          case e: Exception => throw new RuntimeException("Error while deserializing service response. Was:\nRequest:%s\nResponse:%s\n"
+            .format(request.toString, r.getResponseBody), e)
+        }
+      },
+      on404 = { r => List.empty[String] }
+    ))
+  }
+
+  override def products(id: Long): Future[Option[Product]] = {
+    val request = "https://api.gilt.com/v1/products/%s/detail.json?apikey=%s".format(id, apiKey)
+
+    asyncClient.prepareGet(request.toString).execute(new AsyncCompletionHandlerImplWithStdErrorHandling[Option[Product]](
+      on200 = { r =>
+        try {
+          val productJson = jsonMapper.readValue(r.getResponseBodyAsBytes, classOf[ProductJson])
+          Option(ProductJson.toProduct(productJson))
         } catch {
           case e: Exception => throw new RuntimeException("Error while deserializing service response. Was:\nRequest:%s\nResponse:%s\n"
             .format(request.toString, r.getResponseBody), e)

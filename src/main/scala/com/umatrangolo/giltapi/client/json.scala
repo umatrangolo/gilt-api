@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 
 import com.umatrangolo.giltapi.model.Store._
+import com.umatrangolo.giltapi.model.InventoryStatus._
 import com.umatrangolo.giltapi.model._
 
 import java.net.MalformedURLException
@@ -22,6 +23,13 @@ object StoreJson {
   def toStore(storeJson: String): Store = Option(storeJson).flatMap { s => ValueSet.find { _.toString == s } }.getOrElse {
     throw new RuntimeException("Unsupported store (was %s)".format(storeJson))
   }
+}
+
+object InventoryStatusJson {
+  private[this] val ValueSet = InventoryStatus.values
+
+  def toInventoryStatus(inventoryStatusJson: String): InventoryStatus = Option(inventoryStatusJson).flatMap { s => ValueSet.find { _.toString == s } }
+    .getOrElse { throw new RuntimeException("Unsupported inventory status (was %s)".format(inventoryStatusJson)) }
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -61,6 +69,11 @@ final case class SalesJson(
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
+final case class CategoriesJson(
+  @BeanProperty @JsonProperty("categories") categories: JList[String] = JCollections.emptyList[String]
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 final case class ImageJson(
   @BeanProperty @JsonProperty("url") url: String,
   @BeanProperty @JsonProperty("width") width: Int,
@@ -78,4 +91,70 @@ object ImageJson {
     case x :: y :: Nil => ImageKey(x.toInt, y.toInt)
     case _ => throw new RuntimeException("Unsupported ImageKey format (was %s)".format(imageKeyJson))
   }
+}
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+final case class ProductJson(
+  @BeanProperty @JsonProperty("name") name: String,
+  @BeanProperty @JsonProperty("product") product: String,
+  @BeanProperty @JsonProperty("id") id: Long,
+  @BeanProperty @JsonProperty("brand") brand: String,
+  @BeanProperty @JsonProperty("url") url: String,
+  @BeanProperty @JsonProperty("image_urls") image_urls: JMap[String, JList[ImageJson]] = JCollections.emptyMap[String, JList[ImageJson]],
+  @BeanProperty @JsonProperty("skus") skus: JList[SkuJson] = JCollections.emptyList[SkuJson],
+  @BeanProperty @JsonProperty("categories") categories: JList[String] = JCollections.emptyList[String],
+  @BeanProperty @JsonProperty("content") content: ContentJson
+)
+
+object ProductJson {
+  def toProduct(productJson: ProductJson): Product = Product(
+    id = productJson.id.toInt,
+    name = productJson.name,
+    product = new URL(productJson.url),
+    brand = productJson.brand,
+    content = ContentJson.toContent(productJson.content),
+    images = productJson.image_urls.asScala.map { case (imageKey, imageJsons) =>
+      (ImageJson.toImageKey(imageKey) -> imageJsons.asScala.map { imageJson => ImageJson.toImage(imageJson) }.toList)
+    }.toMap,
+    skus = productJson.skus.asScala.map { skuJson => SkuJson.toSku(skuJson) }.toList
+  )
+}
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+final case class SkuJson(
+  @BeanProperty @JsonProperty("id") id: Int,
+  @BeanProperty @JsonProperty("inventory_status") inventory_status: String,
+  @BeanProperty @JsonProperty("msrp_price") msrp: String,
+  @BeanProperty @JsonProperty("sale_price") sale: String,
+  @BeanProperty @JsonProperty("shipping_surcharge") shipping_surcharge: String,
+  @BeanProperty @JsonProperty("attributes") attributes: JMap[String, Any] = JCollections.emptyMap[String, Any]
+)
+
+object SkuJson {
+  def toSku(skuJson: SkuJson): Sku = Sku(
+    id = skuJson.id.toInt,
+    status = InventoryStatusJson.toInventoryStatus(skuJson.inventory_status),
+    msrpPrice = skuJson.msrp.toDouble,
+    salePrice = skuJson.sale.toDouble,
+    attributes = skuJson.attributes.asScala.toMap
+  )
+}
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+final case class ContentJson(
+  @BeanProperty @JsonProperty("description") description: String,
+  @BeanProperty @JsonProperty("fit_notes") fit_notes: String,
+  @BeanProperty @JsonProperty("material") material: String,
+  @BeanProperty @JsonProperty("care_instructions") care_instructions: String,
+  @BeanProperty @JsonProperty("origin") origin: String
+)
+
+object ContentJson {
+  def toContent(contentJson: ContentJson): Content = Content(
+    description = contentJson.description,
+    fitNotes = contentJson.fit_notes,
+    material = contentJson.material,
+    careInstructions = contentJson.care_instructions,
+    origin = contentJson.origin
+  )
 }
