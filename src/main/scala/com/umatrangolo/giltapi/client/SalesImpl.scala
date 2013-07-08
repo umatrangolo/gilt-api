@@ -173,14 +173,10 @@ class NingClientImpl(apiKey: String, ningConfig: NingConfig) extends Sales with 
   private class AsyncCompletionHandlerImplWithStdErrorHandling[T](on200: (Response) => T, on404: (Response) => T)
     extends AsyncCompletionHandlerImpl[T](
       on200,
-      on401 = { r => throw new GiltUnauthorizedException },
+      on401 = { r => throw new RuntimeException("Unauthorized") },
       on404,
-      on500 = { r => throw new GiltInternalServerError },
-      onUnrecognized = { r => throw new GiltUnknownServerStatus(r.getStatusCode) }
+      on500 = { r => throw new RuntimeException("Server error") },
+      onUnrecognized = { r => throw new RuntimeException("Unrecognised status (was %s)".format(r.getStatusCode)) }
     )
 
-  // TODO move out of here
-  final class GiltUnauthorizedException extends RuntimeException("Unauthorized")
-  final class GiltInternalServerError extends RuntimeException("Gilt Internal Server Error")
-  final class GiltUnknownServerStatus(code: Int) extends RuntimeException("Unkown response code (was %s)".format(code))
 }
