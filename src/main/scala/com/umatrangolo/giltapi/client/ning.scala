@@ -1,14 +1,18 @@
-package com.umatrangolo.giltapi.client
+package com.umatrangolo.giltapi.client.ning
 
+import com.ning.http.client.AsyncCompletionHandler
 import com.ning.http.client.AsyncHttpClient
 import com.ning.http.client.AsyncHttpClientConfig._
-import com.ning.http.client.AsyncCompletionHandler
+import com.ning.http.client.HttpResponseStatus
+import com.ning.http.client.ListenableFuture
 import com.ning.http.client.Response
 
-import com.umatrangolo.giltapi.model._
+import com.umatrangolo.giltapi.client.Client
 import com.umatrangolo.giltapi.model.Store._
+import com.umatrangolo.giltapi.model._
+import com.umatrangolo.giltapi.wire._
 import com.umatrangolo.giltapi.{ Sales, Products }
-import com.umatrangolo.giltapi.client.json._
+
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -17,19 +21,15 @@ import scala.collection.LinearSeq
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-import com.ning.http.client.ListenableFuture
-import com.ning.http.client.HttpResponseStatus
-
 object NingClientImpl {
   private[NingClientImpl] val logger = LoggerFactory.getLogger(getClass)
 }
 
-// TODO move out of here
-case class NingConfig(
-  isCompressionEnabled: Boolean = true,
-  isPoolingConnectionEnabled: Boolean = true,
-  requestTimeoutInMs: Int = 30000 // ms
-) {
+trait NingConfig {
+  def isCompressionEnabled: Boolean = true
+  def isPoolingConnectionEnabled: Boolean = true
+  def requestTimeoutInMs: Int = 30000 // ms
+
   override def toString: String =
     """
      |Ning Config is:
@@ -39,28 +39,27 @@ case class NingConfig(
     """.format(isCompressionEnabled, isPoolingConnectionEnabled, requestTimeoutInMs).stripMargin
 }
 
-private[client] abstract class Client(apiKey: String, deserializer: Deserializer) {
-  require(apiKey != null, "The apiKey must be not null")
-  require(apiKey.trim.size > 0, "The apiKey must be non empty")
-  require(deserializer != null, "deserializer can't be null")
-}
+trait NingProvider {
+  ningConfig: NingConfig =>
 
-// TODO Use a factory to build instances of this
-// TODO split in a SalesClient and ProductClients by tearing apart this using traits and then
-// recomposing specific clients from them.
-class NingClientImpl(apiKey: String, ningConfig: NingConfig, deserializer: Deserializer) extends Client(apiKey, deserializer) with Sales with Products {
-  import NingClientImpl._
-  import com.umatrangolo.giltapi.client.utils.FutureConversions._
-
-  private[this] val asyncClient: AsyncHttpClient = new AsyncHttpClient(
-    new Builder()
-      .setCompressionEnabled(ningConfig.isCompressionEnabled)
-      .setAllowPoolingConnection(ningConfig.isPoolingConnectionEnabled)
-      .setRequestTimeoutInMs(ningConfig.requestTimeoutInMs)
+  object NingAsyncClientProvider {
+    val asyncClient: AsyncHttpClient = new AsyncHttpClient(
+      new Builder()
+        .setCompressionEnabled(ningConfig.isCompressionEnabled)
+        .setAllowPoolingConnection(ningConfig.isPoolingConnectionEnabled)
+        .setRequestTimeoutInMs(ningConfig.requestTimeoutInMs)
       .build()
     )
+  }
+}
 
-  logger.info("Ning Sales client impl created for api key: %s and Ning config: %s".format(apiKey, ningConfig))
+class NingClientImpl(apiKey: String, deserializer: Deserializer) extends Client(apiKey, deserializer) with NingProvider with NingConfig
+  with Sales with Products {
+  import NingClientImpl._
+  import NingAsyncClientProvider._
+  import com.umatrangolo.giltapi.client.utils.FutureConversions._
+
+  logger.info("Ning Sales client impl created for api key: %s".format(apiKey))
 
   override def activeSales: Future[LinearSeq[Sale]] = fetchActiveSales(None)
 

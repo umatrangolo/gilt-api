@@ -1,4 +1,4 @@
-package com.umatrangolo.giltapi.client.json
+package com.umatrangolo.giltapi.wire.json
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -8,6 +8,7 @@ import com.fasterxml.jackson.datatype.joda.JodaModule
 import com.umatrangolo.giltapi.model.InventoryStatus._
 import com.umatrangolo.giltapi.model.Store._
 import com.umatrangolo.giltapi.model._
+import com.umatrangolo.giltapi.wire.Deserializer
 
 import java.net.MalformedURLException
 import java.net.URL
@@ -19,11 +20,6 @@ import scala.beans.BeanProperty
 import scala.collection.JavaConverters._
 import scala.collection.LinearSeq
 import scala.util.control.Exception._
-
-// generic type used for orthogonalize deserialization of GILT objects from the wire
-trait Deserializer {
-  def deserialize[T: Manifest](bytes: Array[Byte]): T
-}
 
 // singleton JSON deserializer
 object JsonDeserializer extends Deserializer {

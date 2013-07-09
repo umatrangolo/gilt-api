@@ -9,9 +9,9 @@ import scala.concurrent.Future
 /**
  * Main type to fetch active/upcoming sales.
  *
- * This type that makes possible to fetch different types of sales
- * from the GILT API endpoints. The implementation is non-blocking and
- * will always returns back a future of the expected result.
+ * This type makes possible to fetch different types of sales from the
+ * GILT API endpoints. The implementation is non-blocking and will
+ * always returns back a future of the expected result.
  */
 trait Sales {
 
