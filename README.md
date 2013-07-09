@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/umatrangolo/gilt-api.png)](https://travis-ci.org/umatrangolo/gilt-api)
+
 gilt-api
 ========
 
