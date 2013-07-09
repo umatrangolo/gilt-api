@@ -17,9 +17,6 @@ import scala.collection.LinearSeq
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.joda.JodaModule
-
 import com.ning.http.client.ListenableFuture
 import com.ning.http.client.HttpResponseStatus
 
@@ -42,25 +39,18 @@ case class NingConfig(
     """.format(isCompressionEnabled, isPoolingConnectionEnabled, requestTimeoutInMs).stripMargin
 }
 
-// TODO move out of here
-object Json {
-  lazy val jsonMapper = {
-    val mapper = new ObjectMapper()
-    mapper.registerModule(new JodaModule())
-    mapper
-  }
+private[client] abstract class Client(apiKey: String, deserializer: Deserializer) {
+  require(apiKey != null, "The apiKey must be not null")
+  require(apiKey.trim.size > 0, "The apiKey must be non empty")
+  require(deserializer != null, "deserializer can't be null")
 }
 
 // TODO Use a factory to build instances of this
 // TODO split in a SalesClient and ProductClients by tearing apart this using traits and then
 // recomposing specific clients from them.
-class NingClientImpl(apiKey: String, ningConfig: NingConfig) extends Sales with Products {
+class NingClientImpl(apiKey: String, ningConfig: NingConfig, deserializer: Deserializer) extends Client(apiKey, deserializer) with Sales with Products {
   import NingClientImpl._
   import com.umatrangolo.giltapi.client.utils.FutureConversions._
-  import Json._
-
-  require(apiKey != null, "The apiKey must be not null")
-  require(apiKey.trim.size > 0, "The apiKey must be non empty")
 
   private[this] val asyncClient: AsyncHttpClient = new AsyncHttpClient(
     new Builder()
@@ -87,8 +77,7 @@ class NingClientImpl(apiKey: String, ningConfig: NingConfig) extends Sales with 
     asyncClient.prepareGet(request.toString).execute(new AsyncCompletionHandlerImplWithStdErrorHandling[Option[Sale]](
       on200 = { r =>
         try {
-          val saleJson: SaleJson = jsonMapper.readValue(r.getResponseBodyAsBytes(), classOf[SaleJson])
-          Option(SaleJson.toSale(saleJson))
+          Option(deserializer.deserialize[Sale](r.getResponseBodyAsBytes()))
         } catch {
           case e: Exception => throw new RuntimeException("Error while deserializing service response. Was:\nRequest:%s\nResponse:%s\n"
             .format(request.toString, r.getResponseBody), e)
@@ -98,20 +87,19 @@ class NingClientImpl(apiKey: String, ningConfig: NingConfig) extends Sales with 
     ))
   }
 
-  override def allCategories: Future[LinearSeq[String]] = {
+  override def allCategories: Future[LinearSeq[Category]] = {
     val request = "https://api.gilt.com/v1/products/categories.json?apikey=%s".format(apiKey)
 
-    asyncClient.prepareGet(request.toString).execute(new AsyncCompletionHandlerImplWithStdErrorHandling[LinearSeq[String]](
+    asyncClient.prepareGet(request.toString).execute(new AsyncCompletionHandlerImplWithStdErrorHandling[LinearSeq[Category]](
       on200 = { r =>
         try {
-          val categoriesJson = jsonMapper.readValue(r.getResponseBodyAsBytes(), classOf[CategoriesJson])
-          categoriesJson.categories.asScala.toList
+          deserializer.deserialize[LinearSeq[Category]](r.getResponseBodyAsBytes())
         } catch {
           case e: Exception => throw new RuntimeException("Error while deserializing service response. Was:\nRequest:%s\nResponse:%s\n"
             .format(request.toString, r.getResponseBody), e)
         }
       },
-      on404 = { r => List.empty[String] }
+      on404 = { r => List.empty[Category] }
     ))
   }
 
@@ -121,8 +109,7 @@ class NingClientImpl(apiKey: String, ningConfig: NingConfig) extends Sales with 
     asyncClient.prepareGet(request.toString).execute(new AsyncCompletionHandlerImplWithStdErrorHandling[Option[Product]](
       on200 = { r =>
         try {
-          val productJson = jsonMapper.readValue(r.getResponseBodyAsBytes, classOf[ProductJson])
-          Option(ProductJson.toProduct(productJson))
+          Option(deserializer.deserialize[Product](r.getResponseBodyAsBytes))
         } catch {
           case e: Exception => throw new RuntimeException("Error while deserializing service response. Was:\nRequest:%s\nResponse:%s\n"
             .format(request.toString, r.getResponseBody), e)
@@ -143,8 +130,7 @@ class NingClientImpl(apiKey: String, ningConfig: NingConfig) extends Sales with 
     asyncClient.prepareGet(request.toString).execute(new AsyncCompletionHandlerImplWithStdErrorHandling[LinearSeq[Sale]](
       on200 = { r =>
         try {
-          val salesJson: SalesJson = jsonMapper.readValue(r.getResponseBodyAsBytes(), classOf[SalesJson])
-          salesJson.sales.asScala.map { SaleJson.toSale(_) }.toList
+          deserializer.deserialize[LinearSeq[Sale]](r.getResponseBodyAsBytes())
         } catch {
           case e: Exception => throw new RuntimeException("Error while deserializing service response. Was:\nRequest:%s\nResponse:%s\n"
             .format(request.toString, r.getResponseBody), e)

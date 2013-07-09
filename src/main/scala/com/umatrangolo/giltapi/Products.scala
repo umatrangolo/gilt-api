@@ -1,5 +1,6 @@
 package com.umatrangolo.giltapi
 
+import com.umatrangolo.giltapi.model.Category
 import com.umatrangolo.giltapi.model.Product
 import com.umatrangolo.giltapi.model.Store._
 
@@ -18,7 +19,7 @@ trait Products {
    * Fetches a product from its id.
    *
    * @param id unique identifier the product.
-   * @return an optional product.
+   * @return a deferred optional product.
    */
   def products(id: Long): Future[Option[Product]]
 
@@ -28,8 +29,8 @@ trait Products {
    * Each product belongs to one or more category. This endpoint fetches
    * all available categories from the GILT taxonomy.
    *
-   * @return a list of keys with all the available categories.
+   * @return a deferred list of categories.
    */
-  def allCategories: Future[LinearSeq[String]]
+  def allCategories: Future[LinearSeq[Category]]
 
 }

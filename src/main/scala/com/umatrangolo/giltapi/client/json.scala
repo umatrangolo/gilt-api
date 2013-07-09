@@ -2,9 +2,11 @@ package com.umatrangolo.giltapi.client.json
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.joda.JodaModule
 
-import com.umatrangolo.giltapi.model.Store._
 import com.umatrangolo.giltapi.model.InventoryStatus._
+import com.umatrangolo.giltapi.model.Store._
 import com.umatrangolo.giltapi.model._
 
 import java.net.MalformedURLException
@@ -16,6 +18,33 @@ import org.joda.time.DateTime
 import scala.beans.BeanProperty
 import scala.collection.JavaConverters._
 import scala.collection.LinearSeq
+import scala.util.control.Exception._
+
+// generic type used for orthogonalize deserialization of GILT objects from the wire
+trait Deserializer {
+  def deserialize[T: Manifest](bytes: Array[Byte]): T
+}
+
+// singleton JSON deserializer
+object JsonDeserializer extends Deserializer {
+
+  private lazy val jsonMapper = {
+    val mapper = new ObjectMapper()
+    mapper.registerModule(new JodaModule())
+    mapper
+  }
+
+  // TODO is possible to get rid of the casting ?
+  override def deserialize[T: Manifest](bytes: Array[Byte]): T = manifest[T] match {
+    case m if manifest[T] == manifest[Sale] => SaleJson.toSale(jsonMapper.readValue(bytes, classOf[SaleJson])).asInstanceOf[T]
+    case m if manifest[T] == manifest[Product] => ProductJson.toProduct(jsonMapper.readValue(bytes, classOf[ProductJson])).asInstanceOf[T]
+    case m if manifest[T] == manifest[LinearSeq[Sale]] => jsonMapper.readValue(bytes, classOf[SalesJson])
+      .sales.asScala.map { SaleJson.toSale(_) }.toList.asInstanceOf[T]
+    case m if manifest[T] == manifest[LinearSeq[Category]] => jsonMapper.readValue(bytes, classOf[CategoriesJson])
+      .categories.asScala.map { CategoryJson.toCategory(_) }.toList.asInstanceOf[T]
+    case _ => throw new RuntimeException("Type %s unsupported".format(manifest[T]))
+  }
+}
 
 object StoreJson {
   private[this] val ValueSet = Store.values
@@ -57,9 +86,9 @@ object SaleJson {
     saleJson.begins,
     Option(saleJson.ends),
     saleJson.image_urls.asScala.map { case (imageKey, imageJsons) =>
-      (ImageJson.toImageKey(imageKey) -> imageJsons.asScala.map { imageJson => ImageJson.toImage(imageJson) }.toList)
+      (ImageJson.toImageKey(imageKey) -> imageJsons.asScala.map { imageJson => catching(classOf[MalformedURLException]) opt ImageJson.toImage(imageJson) }.toList.flatten)
     }.toMap,
-    Option(saleJson.products).map { ps => ps.asScala.toList.map { new URL(_) } }.getOrElse(LinearSeq.empty[URL])
+    Option(saleJson.products).map { ps => ps.asScala.toList.map { catching(classOf[MalformedURLException]) opt new URL(_) }.flatten }.getOrElse(LinearSeq.empty[URL])
   )
 }
 
@@ -72,6 +101,10 @@ final case class SalesJson(
 final case class CategoriesJson(
   @BeanProperty @JsonProperty("categories") categories: JList[String] = JCollections.emptyList[String]
 )
+
+object CategoryJson {
+  def toCategory(key: String) = Category(key)
+}
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 final case class ImageJson(
@@ -114,7 +147,7 @@ object ProductJson {
     brand = productJson.brand,
     content = ContentJson.toContent(productJson.content),
     images = productJson.image_urls.asScala.map { case (imageKey, imageJsons) =>
-      (ImageJson.toImageKey(imageKey) -> imageJsons.asScala.map { imageJson => ImageJson.toImage(imageJson) }.toList)
+      (ImageJson.toImageKey(imageKey) -> imageJsons.asScala.map { imageJson => catching(classOf[MalformedURLException]) opt ImageJson.toImage(imageJson) }.toList.flatten)
     }.toMap,
     skus = productJson.skus.asScala.map { skuJson => SkuJson.toSku(skuJson) }.toList
   )
