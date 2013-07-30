@@ -32,5 +32,4 @@ trait Products {
    * @return a deferred list of categories.
    */
   def allCategories: Future[LinearSeq[Category]]
-
 }

@@ -51,5 +51,4 @@ trait Sales {
    * @return a deferred optional sale.
    */
   def sale(saleKey: String, store: Store): Future[Option[Sale]]
-
 }

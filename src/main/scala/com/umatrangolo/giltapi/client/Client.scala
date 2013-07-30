@@ -9,6 +9,10 @@ private[client] abstract class Client(apiKey: String, deserializer: Deserializer
   require(deserializer != null, "deserializer can't be null")
 }
 
-object Client {
-  def apply(apiKey: String) = new NingClientImpl(apiKey, Deserializer.instance)
+object SalesClient {
+  def apply(apiKey: String) = new NingSalesClientImpl(apiKey, Deserializer.instance, NingProvider)
+}
+
+object ProductsClient {
+  def apply(apiKey: String) = new NingProductsClientImpl(apiKey, Deserializer.instance, NingProvider)
 }
