@@ -82,9 +82,14 @@ object SaleJson {
     saleJson.begins,
     Option(saleJson.ends),
     saleJson.image_urls.asScala.map { case (imageKey, imageJsons) =>
-      (ImageJson.toImageKey(imageKey) -> imageJsons.asScala.map { imageJson => catching(classOf[MalformedURLException]) opt ImageJson.toImage(imageJson) }.toList.flatten)
+      (ImageJson.toImageKey(imageKey) -> imageJsons.asScala.map { imageJson =>
+        catching(classOf[MalformedURLException]) opt ImageJson.toImage(imageJson) }.toList.flatten)
     }.toMap,
-    Option(saleJson.products).map { ps => ps.asScala.toList.map { catching(classOf[MalformedURLException]) opt new URL(_) }.flatten }.getOrElse(LinearSeq.empty[URL])
+    Option(saleJson.products).map { ps =>
+      ps.asScala.toList.map {
+        catching(classOf[MalformedURLException]) opt new URL(_)
+      }.flatten
+    }.getOrElse(LinearSeq.empty[URL])
   )
 }
 
@@ -143,7 +148,8 @@ object ProductJson {
     brand = productJson.brand,
     content = ContentJson.toContent(productJson.content),
     images = productJson.image_urls.asScala.map { case (imageKey, imageJsons) =>
-      (ImageJson.toImageKey(imageKey) -> imageJsons.asScala.map { imageJson => catching(classOf[MalformedURLException]) opt ImageJson.toImage(imageJson) }.toList.flatten)
+      (ImageJson.toImageKey(imageKey) -> imageJsons.asScala.map {
+        imageJson => catching(classOf[MalformedURLException]) opt ImageJson.toImage(imageJson) }.toList.flatten)
     }.toMap,
     skus = productJson.skus.asScala.map { skuJson => SkuJson.toSku(skuJson) }.toList
   )
