@@ -13,10 +13,12 @@ case class Product(
   images: Map[ImageKey, List[Image]] = Map.empty[ImageKey, List[Image]],
   skus: LinearSeq[Sku] = LinearSeq.empty[Sku]
 ) {
+  require(id >= 0, "id can't be negative")
   require(name != null, "name can't be null")
   require(name.trim.size > 0, "name can'e be empty")
   require(product != null, "product can't be null")
   require(brand != null, "brand can't be null")
+  require(brand.trim.size > 0, "brand can'e be empty")
   require(content != null, "content can't be null")
   require(images != null, "images can't be null")
   require(skus != null, "skus can't be null")

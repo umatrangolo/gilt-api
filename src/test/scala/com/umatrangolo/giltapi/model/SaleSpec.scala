@@ -47,7 +47,6 @@ class SaleSpec extends WordSpec {
         assert(actual.isUpcoming)
         assert(!actual.isActive)
       }
-      "be equal to the same sale" in { assert(TestSale === TestSale.copy()) }
     }
   }
 }

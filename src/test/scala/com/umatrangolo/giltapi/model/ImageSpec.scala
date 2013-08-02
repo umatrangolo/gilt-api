@@ -28,11 +28,5 @@ class ImageSpec extends WordSpec {
       "reject a width < 0" in { intercept[IllegalArgumentException] { TestImageKey.copy(width = -1) } }
       "reject a height < 0" in { intercept[IllegalArgumentException] { TestImageKey.copy(height = -1) } }
     }
-    "at runtime" should {
-      "should have a sound equals/hashcode" in {
-        assert(TestImageKey === TestImageKey.copy())
-        assert(TestImageKey.## === TestImageKey.copy().##)
-      }
-    }
   }
 }
