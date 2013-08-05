@@ -147,11 +147,15 @@ object ProductJson {
     product = new URL(productJson.url),
     brand = productJson.brand,
     content = ContentJson.toContent(productJson.content),
-    images = productJson.image_urls.asScala.map { case (imageKey, imageJsons) =>
-      (ImageJson.toImageKey(imageKey) -> imageJsons.asScala.map {
-        imageJson => catching(classOf[MalformedURLException]) opt ImageJson.toImage(imageJson) }.toList.flatten)
-    }.toMap,
-    skus = productJson.skus.asScala.map { skuJson => SkuJson.toSku(skuJson) }.toList
+    images = Option(productJson.image_urls).map { urls =>
+      urls.asScala.map { case (imageKey, imageJsons) =>
+        (ImageJson.toImageKey(imageKey) -> imageJsons.asScala.map {
+          imageJson => catching(classOf[MalformedURLException]) opt ImageJson.toImage(imageJson)
+        }.toList.flatten)
+      }.toMap
+    }.getOrElse(Map.empty[ImageKey, List[Image]]),
+    skus = Option(productJson.skus).map { ss => ss.asScala.map { skuJson => SkuJson.toSku(skuJson) }.toList }.getOrElse(LinearSeq.empty[Sku]),
+    categories = Option(productJson.categories).map { cs => cs.asScala.map { Category(_) }.toList }.getOrElse(LinearSeq.empty[Category])
   )
 }
 
@@ -162,7 +166,7 @@ final case class SkuJson(
   @BeanProperty @JsonProperty("msrp_price") msrp: String,
   @BeanProperty @JsonProperty("sale_price") sale: String,
   @BeanProperty @JsonProperty("shipping_surcharge") shipping_surcharge: String,
-  @BeanProperty @JsonProperty("attributes") attributes: JMap[String, Any] = JCollections.emptyMap[String, Any]
+  @BeanProperty @JsonProperty("attributes") attributes: JList[SkuAttributeJson] = JCollections.emptyList[SkuAttributeJson]
 )
 
 object SkuJson {
@@ -171,7 +175,20 @@ object SkuJson {
     status = InventoryStatusJson.toInventoryStatus(skuJson.inventory_status),
     msrpPrice = skuJson.msrp.toDouble,
     salePrice = skuJson.sale.toDouble,
-    attributes = skuJson.attributes.asScala.toMap
+    attributes = skuJson.attributes.asScala.map { SkuAttributeJson.toSkuAttribute }.toList
+  )
+}
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+final case class SkuAttributeJson(
+  @BeanProperty @JsonProperty("name") name: String,
+  @BeanProperty @JsonProperty("value") value: Any
+)
+
+object SkuAttributeJson {
+  def toSkuAttribute(skuAttributeJson: SkuAttributeJson): SkuAttribute = SkuAttribute(
+    name = skuAttributeJson.name,
+    value = skuAttributeJson.value
   )
 }
 
@@ -186,10 +203,10 @@ final case class ContentJson(
 
 object ContentJson {
   def toContent(contentJson: ContentJson): Content = Content(
-    description = contentJson.description,
-    fitNotes = contentJson.fit_notes,
-    material = contentJson.material,
-    careInstructions = contentJson.care_instructions,
-    origin = contentJson.origin
+    description = Some(contentJson.description),
+    fitNotes = Some(contentJson.fit_notes),
+    material = Some(contentJson.material),
+    careInstructions = Some(contentJson.care_instructions),
+    origin = Some(contentJson.origin)
   )
 }

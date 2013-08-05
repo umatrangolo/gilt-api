@@ -6,7 +6,7 @@ import java.net.URL
 import scala.collection.LinearSeq
 
 class ProductSpec extends WordSpec {
-  private val TestContent = Content("description", "fit-notes", "material", "careInstructions", "origin")
+  private val TestContent = Content(Some("description"), Some("fit-notes"), Some("material"), Some("careInstructions"), Some("origin"))
   private val TestProduct = Product(1, "product", new URL("http://www.google.com"), "brand", TestContent, Map.empty[ImageKey, List[Image]],
                                     LinearSeq.empty[Sku])
 
@@ -21,16 +21,7 @@ class ProductSpec extends WordSpec {
       "reject a null content" in { intercept[IllegalArgumentException] { TestProduct.copy(content = null) } }
       "reject a null images" in { intercept[IllegalArgumentException] { TestProduct.copy(images = null) } }
       "reject a null skus" in { intercept[IllegalArgumentException] { TestProduct.copy(skus = null) } }
-    }
-  }
-
-  "A Content" when {
-    "being built" should {
-      "reject a null description" in { intercept[IllegalArgumentException] { TestContent.copy(description = null) } }
-      "reject a null fitNotes" in { intercept[IllegalArgumentException] { TestContent.copy(fitNotes = null) } }
-      "reject a null material" in { intercept[IllegalArgumentException] { TestContent.copy(material = null) } }
-      "reject a null careInstructions" in { intercept[IllegalArgumentException] { TestContent.copy(careInstructions = null) } }
-      "reject a null origin" in { intercept[IllegalArgumentException] { TestContent.copy(origin = null) } }
+      "reject a null categories" in { intercept[IllegalArgumentException] { TestProduct.copy(categories = null) } }
     }
   }
 }

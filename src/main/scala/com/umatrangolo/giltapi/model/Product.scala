@@ -11,7 +11,8 @@ case class Product(
   brand: String,
   content: Content,
   images: Map[ImageKey, List[Image]] = Map.empty[ImageKey, List[Image]],
-  skus: LinearSeq[Sku] = LinearSeq.empty[Sku]
+  skus: LinearSeq[Sku] = LinearSeq.empty[Sku],
+  categories: LinearSeq[Category] = LinearSeq.empty[Category]
 ) {
   require(id >= 0, "id can't be negative")
   require(name != null, "name can't be null")
@@ -22,14 +23,15 @@ case class Product(
   require(content != null, "content can't be null")
   require(images != null, "images can't be null")
   require(skus != null, "skus can't be null")
+  require(categories != null, "categories can't be null")
 }
 
 case class Content(
-  description: String,
-  fitNotes: String,
-  material: String,
-  careInstructions: String,
-  origin: String
+  description: Option[String] = None,
+  fitNotes: Option[String] = None,
+  material: Option[String] = None,
+  careInstructions: Option[String] = None,
+  origin: Option[String] = None
 ) {
   require(description != null, "description can't be null")
   require(fitNotes != null, "fitNotes can't be null")
