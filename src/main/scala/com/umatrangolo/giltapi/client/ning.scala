@@ -25,11 +25,12 @@ private[ning] object NingSalesClientImpl {
   val logger = LoggerFactory.getLogger(classOf[NingSalesClientImpl])
 }
 
-trait NingProvider {
+private[client] trait NingProvider {
   def asyncClient: AsyncHttpClient
 }
 
-object NingProvider extends NingProvider {
+// TODO read from external config
+private[client] object NingProvider extends NingProvider {
   lazy val isCompressionEnabled: Boolean = true
   lazy val isPoolingConnectionEnabled: Boolean = true
   lazy val requestTimeoutInMs: Int = 30000 // ms
@@ -51,7 +52,7 @@ object NingProvider extends NingProvider {
     """.format(isCompressionEnabled, isPoolingConnectionEnabled, requestTimeoutInMs).stripMargin
 }
 
-class NingSalesClientImpl(apiKey: String, deserializer: Deserializer, provider: NingProvider) extends Client(apiKey, deserializer) with Sales {
+private[client] class NingSalesClientImpl(apiKey: String, deserializer: Deserializer, provider: NingProvider) extends Client(apiKey, deserializer) with Sales {
   import NingSalesClientImpl._
   import com.umatrangolo.giltapi.client.utils.FutureConversions._
 
@@ -108,11 +109,12 @@ class NingSalesClientImpl(apiKey: String, deserializer: Deserializer, provider: 
   protected def fetchActiveSales = fetchSales(false) _
 }
 
-private[ning] object NingProductsClientImpl {
+private[client] object NingProductsClientImpl {
   val logger = LoggerFactory.getLogger(classOf[NingProductsClientImpl])
 }
 
-class NingProductsClientImpl(apiKey: String, deserializer: Deserializer, provider: NingProvider) extends Client(apiKey, deserializer) with Products {
+private[client] class NingProductsClientImpl(apiKey: String, deserializer: Deserializer, provider: NingProvider)
+                extends Client(apiKey, deserializer) with Products {
   import NingProductsClientImpl._
   import com.umatrangolo.giltapi.client.utils.FutureConversions._
 

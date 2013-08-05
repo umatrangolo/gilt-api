@@ -22,7 +22,7 @@ import scala.collection.LinearSeq
 import scala.util.control.Exception._
 
 // singleton JSON deserializer
-object JsonDeserializer extends Deserializer {
+private[wire] object JsonDeserializer extends Deserializer {
 
   private lazy val jsonMapper = {
     val mapper = new ObjectMapper()
@@ -42,7 +42,7 @@ object JsonDeserializer extends Deserializer {
   }
 }
 
-object StoreJson {
+private[json] object StoreJson {
   private[this] val ValueSet = Store.values
 
   def toStore(storeJson: String): Store = Option(storeJson).flatMap { s => ValueSet.find { _.toString == s } }.getOrElse {
@@ -50,7 +50,7 @@ object StoreJson {
   }
 }
 
-object InventoryStatusJson {
+private[json] object InventoryStatusJson {
   private[this] val ValueSet = InventoryStatus.values
 
   def toInventoryStatus(inventoryStatusJson: String): InventoryStatus = Option(inventoryStatusJson).flatMap { s => ValueSet.find { _.toString == s } }
@@ -58,7 +58,7 @@ object InventoryStatusJson {
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-final case class SaleJson(
+private[json] final case class SaleJson(
   @BeanProperty @JsonProperty("name") name: String,
   @BeanProperty @JsonProperty("sale") sale: String,
   @BeanProperty @JsonProperty("sale_key") sale_key: String,
@@ -71,7 +71,7 @@ final case class SaleJson(
   @BeanProperty @JsonProperty("products") products: JList[String] = JCollections.emptyList[String]
 )
 
-object SaleJson {
+private[json] object SaleJson {
   def toSale(saleJson: SaleJson): Sale = Sale(
     saleJson.name,
     saleJson.sale,
@@ -94,27 +94,27 @@ object SaleJson {
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-final case class SalesJson(
+private[json] final case class SalesJson(
   @BeanProperty @JsonProperty("sales") sales: JList[SaleJson] = JCollections.emptyList[SaleJson]
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-final case class CategoriesJson(
+private[json] final case class CategoriesJson(
   @BeanProperty @JsonProperty("categories") categories: JList[String] = JCollections.emptyList[String]
 )
 
-object CategoryJson {
+private[json] object CategoryJson {
   def toCategory(key: String) = Category(key)
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-final case class ImageJson(
+private[json] final case class ImageJson(
   @BeanProperty @JsonProperty("url") url: String,
   @BeanProperty @JsonProperty("width") width: Int,
   @BeanProperty @JsonProperty("height") height: Int
 )
 
-object ImageJson {
+private[json] object ImageJson {
   def toImage(imageJson: ImageJson): Image = Image(
     new URL(imageJson.url),
     imageJson.width,
@@ -128,7 +128,7 @@ object ImageJson {
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-final case class ProductJson(
+private[json] final case class ProductJson(
   @BeanProperty @JsonProperty("name") name: String,
   @BeanProperty @JsonProperty("product") product: String,
   @BeanProperty @JsonProperty("id") id: Long,
@@ -140,7 +140,7 @@ final case class ProductJson(
   @BeanProperty @JsonProperty("content") content: ContentJson
 )
 
-object ProductJson {
+private[json] object ProductJson {
   def toProduct(productJson: ProductJson): Product = Product(
     id = productJson.id.toInt,
     name = productJson.name,
@@ -160,7 +160,7 @@ object ProductJson {
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-final case class SkuJson(
+private[json] final case class SkuJson(
   @BeanProperty @JsonProperty("id") id: Int,
   @BeanProperty @JsonProperty("inventory_status") inventory_status: String,
   @BeanProperty @JsonProperty("msrp_price") msrp: String,
@@ -169,7 +169,7 @@ final case class SkuJson(
   @BeanProperty @JsonProperty("attributes") attributes: JList[SkuAttributeJson] = JCollections.emptyList[SkuAttributeJson]
 )
 
-object SkuJson {
+private[json] object SkuJson {
   def toSku(skuJson: SkuJson): Sku = Sku(
     id = skuJson.id.toInt,
     status = InventoryStatusJson.toInventoryStatus(skuJson.inventory_status),
@@ -180,12 +180,12 @@ object SkuJson {
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-final case class SkuAttributeJson(
+private[json] final case class SkuAttributeJson(
   @BeanProperty @JsonProperty("name") name: String,
   @BeanProperty @JsonProperty("value") value: Any
 )
 
-object SkuAttributeJson {
+private[json] object SkuAttributeJson {
   def toSkuAttribute(skuAttributeJson: SkuAttributeJson): SkuAttribute = SkuAttribute(
     name = skuAttributeJson.name,
     value = skuAttributeJson.value
@@ -193,7 +193,7 @@ object SkuAttributeJson {
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-final case class ContentJson(
+private[json] final case class ContentJson(
   @BeanProperty @JsonProperty("description") description: String,
   @BeanProperty @JsonProperty("fit_notes") fit_notes: String,
   @BeanProperty @JsonProperty("material") material: String,
@@ -201,7 +201,7 @@ final case class ContentJson(
   @BeanProperty @JsonProperty("origin") origin: String
 )
 
-object ContentJson {
+private[json] object ContentJson {
   def toContent(contentJson: ContentJson): Content = Content(
     description = Some(contentJson.description),
     fitNotes = Some(contentJson.fit_notes),
