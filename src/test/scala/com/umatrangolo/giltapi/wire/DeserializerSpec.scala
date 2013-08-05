@@ -1,13 +1,53 @@
 package com.umatrangolo.giltapi.wire
 
-import org.scalatest.WordSpec
 import com.umatrangolo.giltapi.model._
+
 import java.net.URL
+
 import org.joda.time.{ DateTime, DateTimeZone }
+
+import org.scalatest.WordSpec
+
+import scala.collection.LinearSeq
+import scala.io.Source
 
 abstract class DeserializerSpec extends WordSpec {
 
   val deserializer: Deserializer
+
+  "The Deserializer" should {
+    "deserialize a Sale" in {
+      expect(TestSale) { deserializer.deserialize[Sale](TestSaleAsBytes) }
+    }
+
+    "deserialize a Product" in {
+      expect(TestProduct) { deserializer.deserialize[Product](TestProductAsBytes) }
+    }
+
+    "deserialize a seq of Sales" in {
+      val actual = deserializer.deserialize[LinearSeq[Sale]](TestSalesAsBytes)
+      assert(actual != null)
+      assert(actual.size === 69)
+    }
+
+    "return an empty seq of sales iff there are none" in {
+      val actual = deserializer.deserialize[LinearSeq[Sale]]("""{"sales":[]}""".getBytes)
+      assert(actual != null)
+      assert(actual.isEmpty === true)
+    }
+
+    "deserialize a seq of Categories" in {
+      val actual = deserializer.deserialize[LinearSeq[Category]](TestCategoriesAsBytes)
+      assert(actual != null)
+      assert(actual.size === 232)
+    }
+
+    "return an empty seq of categories iff there are none" in {
+      val actual = deserializer.deserialize[LinearSeq[Category]]("""{"categories":[]}""".getBytes)
+      assert(actual != null)
+      assert(actual.isEmpty === true)
+    }
+  }
 
   val TestSaleAsBytes: Array[Byte]
   val TestSale = Sale("Dark Denim & Tees", "https://api.gilt.com/v1/sales/men/armani-jeans-theme/detail.json","armani-jeans-theme",Store.Men,
@@ -75,22 +115,21 @@ abstract class DeserializerSpec extends WordSpec {
       Category("Clothing"))
   )
 
-  "The Deserializer" should {
-    "correctly deserialize a Sale" in {
-      expect(TestSale) { deserializer.deserialize[Sale](TestSaleAsBytes) }
-    }
-
-    "correctly deserialize a Product" in {
-      expect(TestProduct) { deserializer.deserialize[Product](TestProductAsBytes) }
-    }
-
-  }
+  val TestCategoriesAsBytes: Array[Byte]
+  val TestSalesAsBytes: Array[Byte]
 }
 
 import com.umatrangolo.giltapi.wire.json._
 
 class JsonDeserializerSpec extends DeserializerSpec {
   override val deserializer = JsonDeserializer
+
+  override val TestSalesAsBytes: Array[Byte] =
+    new String(Source.fromInputStream(this.getClass.getClassLoader.getResourceAsStream("list-of-sales.json")).toArray[Char]).getBytes
+
+  override val TestCategoriesAsBytes: Array[Byte] =
+    new String(Source.fromInputStream(this.getClass.getClassLoader.getResourceAsStream("categories.json")).toArray[Char]).getBytes
+
   override val TestSaleAsBytes: Array[Byte] =
     """
 |{
