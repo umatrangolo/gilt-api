@@ -129,9 +129,9 @@ private[client] class NingProductsClientImpl(apiKey: String, deserializer: Deser
           deserializer.deserialize[LinearSeq[Category]](r.getResponseBodyAsBytes())
         } catch {
           case e: Exception => throw new RuntimeException("Error while deserializing service response. Was:\nRequest:%s\nResponse:%s\n"
-                                                          .format(request.toString, r.getResponseBody), e)
+            .format(request.toString, r.getResponseBody), e)
         }
-             },
+      },
       on404 = { r => List.empty[Category] }
     ))
   }
@@ -145,9 +145,9 @@ private[client] class NingProductsClientImpl(apiKey: String, deserializer: Deser
           Option(deserializer.deserialize[Product](r.getResponseBodyAsBytes))
         } catch {
           case e: Exception => throw new RuntimeException("Error while deserializing service response. Was:\nRequest:%s\nResponse:%s\n"
-                                                          .format(request.toString, r.getResponseBody), e)
+            .format(request.toString, r.getResponseBody), e)
         }
-             },
+      },
       on404 = { r => None }
     ))
   }
