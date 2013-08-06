@@ -3,6 +3,10 @@ import JacocoPlugin._
 
 name := "gilt-api"
 
+organization := "com.umatrangolo"
+
+version := "0.0.1-SNAPSHOT"
+
 scalaVersion in ThisBuild := "2.10.2"
 
 libraryDependencies ++= Seq(
