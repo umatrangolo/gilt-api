@@ -33,7 +33,6 @@ private[client] trait NingProvider {
   def asyncClient: AsyncHttpClient
 }
 
-// TODO read from external config
 private[client] object NingProvider extends NingProvider {
   val logger = LoggerFactory.getLogger(classOf[NingProvider])
 
