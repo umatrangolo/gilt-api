@@ -20,6 +20,10 @@ import scala.collection.JavaConverters._
 import scala.collection.LinearSeq
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.util.control.Exception._
+
+import java.util.Properties
+import java.io.IOException
 
 private[ning] object NingSalesClientImpl {
   val logger = LoggerFactory.getLogger(classOf[NingSalesClientImpl])
@@ -31,9 +35,33 @@ private[client] trait NingProvider {
 
 // TODO read from external config
 private[client] object NingProvider extends NingProvider {
-  lazy val isCompressionEnabled: Boolean = true
-  lazy val isPoolingConnectionEnabled: Boolean = true
-  lazy val requestTimeoutInMs: Int = 30000 // ms
+  val logger = LoggerFactory.getLogger(classOf[NingProvider])
+
+  private val default: Properties = {
+    val props = new Properties()
+
+    props.setProperty("giltapi.client.ning.is_compression_enabled", "true")
+    props.setProperty("giltapi.client.ning.is_pooling_enabled", "true")
+    props.setProperty("giltapi.client.ning.request_timeout_in_ms", "30000")
+    props
+  }
+
+  private val properties = {
+    val props = new Properties(default)
+    val propIs = catching(classOf[IOException]) opt this.getClass.getClassLoader.getResourceAsStream("giltapi.properties")
+
+    propIs.foreach { ps =>
+      logger.info("Loading configuration from giltapi.properties found in the classpath")
+      props.load(ps)
+      ps.close
+    }
+
+    props
+  }
+
+  val isCompressionEnabled: Boolean = properties.getProperty("is_compression_enabled", "true").toBoolean
+  val isPoolingConnectionEnabled: Boolean = properties.getProperty("is_pooling_enabled", "true").toBoolean
+  val requestTimeoutInMs: Int = properties.getProperty("request_timeout_in_ms", "true").toInt
 
   override val asyncClient = new AsyncHttpClient(
     new Builder()

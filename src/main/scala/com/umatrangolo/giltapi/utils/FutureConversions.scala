@@ -34,5 +34,6 @@ object FutureConversions {
     promise.future
   }
 
+  // TODO conversion to GuavaFuture for Java interoperability
   implicit def ningListenableFuture2GuavaFuture[T](ningFuture: NingListenableFuture[T]): GuavaListenableFuture[T] = ???
 }
