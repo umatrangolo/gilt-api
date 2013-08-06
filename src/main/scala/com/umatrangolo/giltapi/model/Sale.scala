@@ -8,6 +8,7 @@ import org.joda.time.DateTime
 
 import scala.collection.LinearSeq
 
+/** A set of Products available to sell at discounted (?) prices */
 case class Sale(
   name: String,
   sale: String,

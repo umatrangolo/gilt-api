@@ -4,6 +4,13 @@ import java.net.URL
 
 import scala.collection.LinearSeq
 
+/**
+ * Something availble in a Sale.
+ *
+ * A Product is mainly a set of Images showing how it looks like and
+ * a set of Skus keeping track of each different form you can find this
+ * Product in (e.g. this Product in size X, XS, M, etc.).
+ */
 case class Product(
   id: Int,
   name: String,
