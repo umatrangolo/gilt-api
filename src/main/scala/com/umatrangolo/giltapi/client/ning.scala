@@ -82,7 +82,7 @@ private[client] object NingProvider extends NingProvider {
 
 private[client] class NingSalesClientImpl(apiKey: String, deserializer: Deserializer, provider: NingProvider) extends Client(apiKey, deserializer) with Sales {
   import NingSalesClientImpl._
-  import com.umatrangolo.giltapi.client.utils.FutureConversions._
+  import com.umatrangolo.giltapi.utils.FutureConversions._
 
   logger.info("Ning Sales client impl created for api key: %s using provider: %s".format(apiKey, provider.asyncClient))
 
@@ -144,7 +144,7 @@ private[client] object NingProductsClientImpl {
 private[client] class NingProductsClientImpl(apiKey: String, deserializer: Deserializer, provider: NingProvider)
                 extends Client(apiKey, deserializer) with Products {
   import NingProductsClientImpl._
-  import com.umatrangolo.giltapi.client.utils.FutureConversions._
+  import com.umatrangolo.giltapi.utils.FutureConversions._
 
   logger.info("Ning Products client impl created for api key: %s using provider: %s".format(apiKey, provider.asyncClient))
 

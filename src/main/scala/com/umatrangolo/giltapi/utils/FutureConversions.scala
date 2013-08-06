@@ -1,4 +1,4 @@
-package com.umatrangolo.giltapi.client.utils
+package com.umatrangolo.giltapi.utils
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import com.google.common.util.concurrent.{ ListenableFuture => GuavaListenableFuture }

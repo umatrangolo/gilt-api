@@ -2,6 +2,7 @@ package com.umatrangolo.giltapi.client
 
 import com.umatrangolo.giltapi.wire._
 import com.umatrangolo.giltapi.client.ning._
+import com.umatrangolo.giltapi.utils.ApiKey
 
 private[client] abstract class Client(apiKey: String, deserializer: Deserializer) {
   require(apiKey != null, "The apiKey must be not null")
@@ -10,9 +11,11 @@ private[client] abstract class Client(apiKey: String, deserializer: Deserializer
 }
 
 object SalesClient {
+  def apply() = new NingSalesClientImpl(ApiKey.value.get, Deserializer.instance, NingProvider)
   def apply(apiKey: String) = new NingSalesClientImpl(apiKey, Deserializer.instance, NingProvider)
 }
 
 object ProductsClient {
+  def apply() = new NingProductsClientImpl(ApiKey.value.get, Deserializer.instance, NingProvider)
   def apply(apiKey: String) = new NingProductsClientImpl(apiKey, Deserializer.instance, NingProvider)
 }
