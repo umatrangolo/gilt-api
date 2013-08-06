@@ -25,3 +25,40 @@ libraryDependencies ++= Seq(
 libraryDependencies += "org.scalatest" % "scalatest_2.10" % "1.9.1" % "test"
 
 seq(jacoco.settings : _*)
+
+resolvers ++= Seq(
+  "Sonatype.org Snapshots" at "http://oss.sonatype.org/content/repositories/snapshots",
+  "Sonatype.org Releases" at "http://oss.sonatype.org/service/local/staging/deploy/maven2"
+)
+
+publishMavenStyle := true
+
+publishTo <<= version { (v: String) =>
+  val nexus = "https://oss.sonatype.org/"
+  if (v.trim.endsWith("SNAPSHOT"))
+    Some("snapshots" at nexus + "content/repositories/snapshots")
+  else
+    Some("releases"  at nexus + "/service/local/staging/deploy/maven2")
+}
+
+publishArtifact in Test := false
+
+licenses := Seq("Apache License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0"))
+
+homepage := Some(url("https://github.com/umatrangolo/gilt-api"))
+
+pomIncludeRepository := { _ => false }
+
+pomExtra := (
+  <scm>
+    <url>git@github.com:umatrangolo/gilt-api.git</url>
+    <connection>scm:git:git@github.com:umatrangolo/gilt-api.git</connection>
+  </scm>
+  <developers>
+    <developer>
+      <id>umatrangolo</id>
+      <name>Ugo Matrangolo</name>
+      <url>http://umatrangolo.com</url>
+    </developer>
+  </developers>
+)
