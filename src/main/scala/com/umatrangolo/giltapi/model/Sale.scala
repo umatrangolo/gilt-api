@@ -8,6 +8,8 @@ import org.joda.time.DateTime
 
 import scala.collection.LinearSeq
 
+// TODO add @BeanProperties annotation to make object model Java friendly
+// TODO add a lazy productIds: LinearSeq[Long] that returns all the product ids of this Sale
 /** A set of Products available to sell at discounted (?) prices */
 case class Sale(
   name: String,
@@ -38,4 +40,9 @@ case class Sale(
 
   def isUpcoming = products.isEmpty
   def isActive = !isUpcoming
+
+  lazy val productIds: LinearSeq[Long] = products.map { url =>
+    val split = url.toString.split("products/")(1)
+    split.substring(0, split.indexOf("/")).toLong
+  }
 }

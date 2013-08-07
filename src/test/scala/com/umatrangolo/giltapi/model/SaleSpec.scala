@@ -17,7 +17,9 @@ class SaleSpec extends WordSpec {
   private val AfterABit = new DateTime(Now.getMillis + 10000)
 
   private val TestSale = Sale("name", "sale", "key", Store.Women, Some("description"), new URL("http://www.gilt.com"), Now, Some(AfterABit),
-                              Map.empty[ImageKey, List[Image]], List(new URL("http://www.gilt.com/products/1"), new URL("http://www.gilt.com/products/2")))
+                              Map.empty[ImageKey, List[Image]],
+                              List(new URL("http://www.gilt.com/products/1/detail.json"),
+                                   new URL("http://www.gilt.com/products/2/detail.json")))
 
   "A Sale" when {
     "constructed" should {
@@ -42,10 +44,15 @@ class SaleSpec extends WordSpec {
         assert(actual.isActive)
         assert(!actual.isUpcoming)
       }
+
       "be upcoming if it has not products" in {
         val actual = TestSale.copy(begins = AfterABit, ends = Some(new DateTime(Now.getMillis + 20000)), products = LinearSeq.empty[URL])
         assert(actual.isUpcoming)
         assert(!actual.isActive)
+      }
+
+      "return all products ids as a list of Long" in {
+        expect(List(1, 2)) { TestSale.productIds }
       }
     }
   }

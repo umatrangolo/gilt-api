@@ -60,7 +60,7 @@ private[client] object NingProvider extends NingProvider {
 
   val isCompressionEnabled: Boolean = properties.getProperty("is_compression_enabled", "true").toBoolean
   val isPoolingConnectionEnabled: Boolean = properties.getProperty("is_pooling_enabled", "true").toBoolean
-  val requestTimeoutInMs: Int = properties.getProperty("request_timeout_in_ms", "true").toInt
+  val requestTimeoutInMs: Int = properties.getProperty("request_timeout_in_ms", "30000").toInt
 
   override val asyncClient = new AsyncHttpClient(
     new Builder()
