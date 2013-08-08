@@ -2,6 +2,7 @@ package com.umatrangolo.giltapi.model
 
 import java.net.URL
 
+import scala.beans.BeanProperty
 import scala.collection.LinearSeq
 
 /**
@@ -12,14 +13,14 @@ import scala.collection.LinearSeq
  * Product in (e.g. this Product in size X, XS, M, etc.).
  */
 case class Product(
-  id: Int,
-  name: String,
-  product: URL,
-  brand: String,
-  content: Content,
-  images: Map[ImageKey, List[Image]] = Map.empty[ImageKey, List[Image]],
-  skus: LinearSeq[Sku] = LinearSeq.empty[Sku],
-  categories: LinearSeq[Category] = LinearSeq.empty[Category]
+  @BeanProperty id: Int,
+  @BeanProperty name: String,
+  @BeanProperty product: URL,
+  @BeanProperty brand: String,
+  @BeanProperty content: Content,
+  @BeanProperty images: Map[ImageKey, List[Image]] = Map.empty[ImageKey, List[Image]],
+  @BeanProperty skus: LinearSeq[Sku] = LinearSeq.empty[Sku],
+  @BeanProperty categories: LinearSeq[Category] = LinearSeq.empty[Category]
 ) {
   require(id >= 0, "id can't be negative")
   require(name != null, "name can't be null")
@@ -34,11 +35,11 @@ case class Product(
 }
 
 case class Content(
-  description: Option[String] = None,
-  fitNotes: Option[String] = None,
-  material: Option[String] = None,
-  careInstructions: Option[String] = None,
-  origin: Option[String] = None
+  @BeanProperty description: Option[String] = None,
+  @BeanProperty fitNotes: Option[String] = None,
+  @BeanProperty material: Option[String] = None,
+  @BeanProperty careInstructions: Option[String] = None,
+  @BeanProperty origin: Option[String] = None
 ) {
   require(description != null, "description can't be null")
   require(fitNotes != null, "fitNotes can't be null")

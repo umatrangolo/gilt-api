@@ -6,22 +6,21 @@ import java.net.URL
 
 import org.joda.time.DateTime
 
+import scala.beans.BeanProperty
 import scala.collection.LinearSeq
 
-// TODO add @BeanProperties annotation to make object model Java friendly
-// TODO add a lazy productIds: LinearSeq[Long] that returns all the product ids of this Sale
 /** A set of Products available to sell at discounted (?) prices */
 case class Sale(
-  name: String,
-  sale: String,
-  key: String,
-  store: Store,
-  description: Option[String] = None,
-  url: URL,
-  begins: DateTime,
-  ends: Option[DateTime] = None,
-  images: Map[ImageKey, List[Image]] = Map.empty[ImageKey, List[Image]],
-  products: LinearSeq[URL] = LinearSeq.empty[URL]
+  @BeanProperty name: String,
+  @BeanProperty sale: String,
+  @BeanProperty key: String,
+  @BeanProperty store: Store,
+  @BeanProperty description: Option[String] = None,
+  @BeanProperty url: URL,
+  @BeanProperty begins: DateTime,
+  @BeanProperty ends: Option[DateTime] = None,
+  @BeanProperty images: Map[ImageKey, List[Image]] = Map.empty[ImageKey, List[Image]],
+  @BeanProperty products: LinearSeq[URL] = LinearSeq.empty[URL]
 ) {
   require(name != null, "name can't be null")
   require(name.trim.size > 0, "name can'e be empty")

@@ -2,17 +2,19 @@ package com.umatrangolo.giltapi.model
 
 import com.umatrangolo.giltapi.model.InventoryStatus._
 
+import scala.beans.BeanProperty
+
 /**
  * The real thing.
  *
  * This is what people buys (e.g. `Hermes bag` [Product] in `red` [SkuAttribute]).
  */
 case class Sku(
-  id: Int,
-  status: InventoryStatus,
-  msrpPrice: Double,
-  salePrice: Double,
-  attributes: List[SkuAttribute] = List.empty[SkuAttribute]
+  @BeanProperty id: Int,
+  @BeanProperty status: InventoryStatus,
+  @BeanProperty msrpPrice: Double,
+  @BeanProperty salePrice: Double,
+  @BeanProperty attributes: List[SkuAttribute] = List.empty[SkuAttribute]
 ) {
   require(id >= 0, "id can't be negative")
   require(status != null, "status can't be null")
@@ -22,7 +24,7 @@ case class Sku(
 }
 
 /** An attribute of a Sku like `size`, `color`, `fabric`, etc. */
-case class SkuAttribute(name: String, value: Any) {
+case class SkuAttribute(@BeanProperty name: String, @BeanProperty value: Any) {
   require(name != null, "name can't be null")
   require(value != null, "value can't be null")
 }
