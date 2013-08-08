@@ -1,7 +1,7 @@
 package com.umatrangolo.giltapi.example
 
 import com.umatrangolo.giltapi.{ Sales, Products }
-import com.umatrangolo.giltapi.client.{ SalesClient, ProductsClient }
+import com.umatrangolo.giltapi.client.GiltClientFactory
 import com.umatrangolo.giltapi.model._
 
 import scala.collection.LinearSeq
@@ -11,8 +11,8 @@ import scala.concurrent.duration._
 object SaleListingApp extends App {
   println("**** Fetching sale listing ... ")
 
-  val salesClient = SalesClient()
-  val productClient = ProductsClient()
+  val salesClient = GiltClientFactory.newSalesClientInstance()
+  val productClient = GiltClientFactory.newProductsClientInstance()
 
   // active sales
   println("======== ACTIVE SALES ========")

@@ -10,13 +10,32 @@ private[client] abstract class Client(apiKey: String, deserializer: Deserializer
   require(deserializer != null, "deserializer can't be null")
 }
 
-// TODO provide a better factory for these
-object SalesClient {
-  def apply() = new NingSalesClientImpl(ApiKey.value.get, Deserializer.instance, NingProvider)
-  def apply(apiKey: String) = new NingSalesClientImpl(apiKey, Deserializer.instance, NingProvider)
-}
+/**
+ * Factory for all the available Gilt clients.
+ */
+object GiltClientFactory {
 
-object ProductsClient {
-  def apply() = new NingProductsClientImpl(ApiKey.value.get, Deserializer.instance, NingProvider)
-  def apply(apiKey: String) = new NingProductsClientImpl(apiKey, Deserializer.instance, NingProvider)
+  /**
+   * Returns a new instance of the Sales client fetching api key from
+   * sys properties or giltapi.properties file in the classpath.
+   */
+  def newSalesClientInstance() = new NingSalesClientImpl(ApiKey.value.get, Deserializer.instance, NingProvider)
+
+  /**
+   * Returns a new instance of the Sales client fetching api key from
+   * sys properties or giltapi.properties file in the classpath.
+   */
+  def newSalesClientInstance(apiKey: String) = new NingSalesClientImpl(apiKey, Deserializer.instance, NingProvider)
+
+  /**
+   * Returns a new instance of the Products client fetching api key from
+   * sys properties or giltapi.properties file in the classpath.
+   */
+  def newProductsClientInstance() = new NingProductsClientImpl(ApiKey.value.get, Deserializer.instance, NingProvider)
+
+  /**
+   * Returns a new instance of the Products client fetching api key from
+   * sys properties or giltapi.properties file in the classpath.
+   */
+  def newProductsClientInstnace(apiKey: String) = new NingProductsClientImpl(apiKey, Deserializer.instance, NingProvider)
 }
