@@ -93,9 +93,8 @@ private[client] class NingSalesClientImpl(apiKey: String, deserializer: Deserial
 
   override def upcomingSales(store: Store): Future[LinearSeq[Sale]] = fetchUpcomingSales(Option(store))
 
-  override def sale(saleKey: String, store: Store): Future[Option[Sale]] = {
-    val request = new StringBuilder("https://api.gilt.com/v1/")
-      .append(store).append("/").append(saleKey).append("/detail.json?apikey=%s".format(apiKey))
+  override def sales(saleKey: String, store: Store): Future[Option[Sale]] = {
+    val request = "https://api.gilt.com/v1/sales/%s/%s/detail.json?apikey=%s".format(store, saleKey, apiKey)
 
     provider.asyncClient.prepareGet(request.toString).execute(new AsyncCompletionHandlerImplWithStdErrorHandling[Option[Sale]](
       on200 = { r =>

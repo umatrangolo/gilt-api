@@ -16,7 +16,7 @@ object SaleListingApp extends App {
 
   // active sales
   println("======== ACTIVE SALES ========")
-  val activeSales: LinearSeq[Sale] = Await.result(salesClient.activeSales, 10 seconds)
+  val activeSales: LinearSeq[Sale] = Await.result(salesClient.activeSales, 30 seconds)
   activeSales.groupBy { _.store }.foreach { case (store, sales) =>
     println(">> Store: " + store)
     sales.foreach { sale => println(">> " + sale.name) }
@@ -24,7 +24,7 @@ object SaleListingApp extends App {
 
   // upcoming sales
   println("======== UPCOMING SALES ========")
-  val upcomingSales: LinearSeq[Sale] = Await.result(salesClient.upcomingSales, 10 seconds)
+  val upcomingSales: LinearSeq[Sale] = Await.result(salesClient.upcomingSales, 30 seconds)
   upcomingSales.groupBy { _.store }.foreach { case (store, sales) =>
     println(">> Store: " + store)
     sales.foreach { sale => println(">> " + sale.name) }
@@ -32,10 +32,10 @@ object SaleListingApp extends App {
 
   // details about a single sale in the Women store
   println("======== FIRST SALE FOR WOMEN ========")
-  val salesForWomen: LinearSeq[Sale] = Await.result(salesClient.activeSales(Store.Women), 10 seconds)
+  val salesForWomen: LinearSeq[Sale] = Await.result(salesClient.activeSales(Store.Women), 30 seconds)
   salesForWomen.headOption.foreach { sale =>
     println(">> Getting details about " + sale.name)
-    val saleDetails = Await.result(salesClient.sale(sale.key, Store.Women), 10 seconds)
+    val saleDetails = Await.result(salesClient.sales(sale.key, Store.Women), 30 seconds)
     println(">> [%s] is \n%s".format(sale.key, saleDetails))
   }
 
@@ -45,7 +45,7 @@ object SaleListingApp extends App {
     println(">> last sale in the Women store is " + sale.name)
     sale.productIds.headOption.foreach { pid =>
       println("\n\n**** Getting info about Product with id: " + pid)
-      val product = Await.result(productClient.products(pid), 10 seconds)
+      val product = Await.result(productClient.products(pid), 30 seconds)
       println("---- Product with id %s is: \n%s".format(pid, product))
     }
   }

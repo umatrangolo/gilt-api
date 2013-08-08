@@ -50,5 +50,5 @@ trait Sales {
    * @param saleKey the uniquely identifying key of the Sale
    * @return a deferred optional Sale.
    */
-  def sale(saleKey: String, store: Store): Future[Option[Sale]]
+  def sales(saleKey: String, store: Store): Future[Option[Sale]]
 }
