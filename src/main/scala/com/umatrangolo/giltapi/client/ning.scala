@@ -22,8 +22,10 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.control.Exception._
 
-import java.util.Properties
 import java.io.IOException
+
+import java.util.Collections._
+import java.util.{ Properties, List => JList }
 
 private[ning] object NingSalesClientImpl {
   val logger = LoggerFactory.getLogger(classOf[NingSalesClientImpl])
@@ -85,15 +87,15 @@ private[client] class NingSalesClientImpl(apiKey: String, deserializer: Deserial
 
   logger.info("Ning Sales client impl created for api key: %s using provider: %s".format(apiKey, provider.asyncClient))
 
-  override def activeSales: Future[LinearSeq[Sale]] = fetchActiveSales(None)
+  override def getActiveSales: Future[JList[Sale]] = fetchActiveSales(None).map { ls => unmodifiableList(ls.asJava) }
 
-  override def activeSales(store: Store): Future[LinearSeq[Sale]] = fetchActiveSales(Option(store))
+  override def getActiveSales(store: Store): Future[JList[Sale]] = fetchActiveSales(Option(store)).map { ls => unmodifiableList(ls.asJava) }
 
-  override def upcomingSales: Future[LinearSeq[Sale]] = fetchUpcomingSales(None)
+  override def getUpcomingSales: Future[JList[Sale]] = fetchUpcomingSales(None).map { ls => unmodifiableList(ls.asJava) }
 
-  override def upcomingSales(store: Store): Future[LinearSeq[Sale]] = fetchUpcomingSales(Option(store))
+  override def getUpcomingSales(store: Store): Future[JList[Sale]] = fetchUpcomingSales(Option(store)).map { ls => unmodifiableList(ls.asJava) }
 
-  override def sales(saleKey: String, store: Store): Future[Option[Sale]] = {
+  override def getSale(saleKey: String, store: Store): Future[Option[Sale]] = {
     val request = "https://api.gilt.com/v1/sales/%s/%s/detail.json?apikey=%s".format(store, saleKey, apiKey)
 
     provider.asyncClient.prepareGet(request.toString).execute(new AsyncCompletionHandlerImplWithStdErrorHandling[Option[Sale]](
@@ -146,23 +148,23 @@ private[client] class NingProductsClientImpl(apiKey: String, deserializer: Deser
 
   logger.info("Ning Products client impl created for api key: %s using provider: %s".format(apiKey, provider.asyncClient))
 
-  override def allCategories: Future[LinearSeq[Category]] = {
+  override def getAllCategories: Future[JList[Category]] = {
     val request = "https://api.gilt.com/v1/products/categories.json?apikey=%s".format(apiKey)
 
-    provider.asyncClient.prepareGet(request.toString).execute(new AsyncCompletionHandlerImplWithStdErrorHandling[LinearSeq[Category]](
+    provider.asyncClient.prepareGet(request.toString).execute(new AsyncCompletionHandlerImplWithStdErrorHandling[JList[Category]](
       on200 = { r =>
         try {
-          deserializer.deserialize[LinearSeq[Category]](r.getResponseBodyAsBytes())
+          unmodifiableList(deserializer.deserialize[LinearSeq[Category]](r.getResponseBodyAsBytes()).asJava)
         } catch {
           case e: Exception => throw new RuntimeException("Error while deserializing service response. Was:\nRequest:%s\nResponse:%s\n"
             .format(request.toString, r.getResponseBody), e)
         }
       },
-      on404 = { r => List.empty[Category] }
+      on404 = { r => emptyList[Category] }
     ))
   }
 
-  override def products(id: Long): Future[Option[Product]] = {
+  override def getProduct(id: Long): Future[Option[Product]] = {
     val request = "https://api.gilt.com/v1/products/%s/detail.json?apikey=%s".format(id, apiKey)
 
     provider.asyncClient.prepareGet(request.toString).execute(new AsyncCompletionHandlerImplWithStdErrorHandling[Option[Product]](

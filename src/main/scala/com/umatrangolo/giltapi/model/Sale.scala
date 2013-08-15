@@ -3,13 +3,15 @@ package com.umatrangolo.giltapi.model
 import com.umatrangolo.giltapi.model.Store._
 
 import java.net.URL
+import java.util.{ List => JList, Map => JMap, Collections => JCollections }
+import java.lang.{ Long => JLong }
 
 import org.joda.time.DateTime
 
 import scala.beans.BeanProperty
-import scala.collection.LinearSeq
+import scala.collection.JavaConverters._
 
-/** A set of Products available to sell at discounted (?) prices */
+/** A set of Products available to sell at discounted prices */
 case class Sale(
   @BeanProperty name: String,
   @BeanProperty sale: String,
@@ -19,8 +21,8 @@ case class Sale(
   @BeanProperty url: URL,
   @BeanProperty begins: DateTime,
   @BeanProperty ends: Option[DateTime] = None,
-  @BeanProperty images: Map[ImageKey, List[Image]] = Map.empty[ImageKey, List[Image]],
-  @BeanProperty products: LinearSeq[URL] = LinearSeq.empty[URL]
+  @BeanProperty images: JMap[ImageKey, JList[Image]] = JCollections.emptyMap[ImageKey, JList[Image]],
+  @BeanProperty products: JList[URL] = JCollections.emptyList[URL]
 ) {
   require(name != null, "name can't be null")
   require(name.trim.size > 0, "name can'e be empty")
@@ -40,8 +42,8 @@ case class Sale(
   def isUpcoming = products.isEmpty
   def isActive = !isUpcoming
 
-  lazy val productIds: LinearSeq[Long] = products.map { url =>
+  @BeanProperty lazy val productIds: JList[JLong] = JCollections.unmodifiableList(products.asScala.map { url =>
     val split = url.toString.split("products/")(1)
-    split.substring(0, split.indexOf("/")).toLong
-  }
+    JLong.valueOf(split.substring(0, split.indexOf("/")))
+  }.asJava)
 }

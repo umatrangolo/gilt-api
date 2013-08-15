@@ -3,12 +3,13 @@ package com.umatrangolo.giltapi.model
 import com.umatrangolo.giltapi.TestUtils
 
 import java.net.URL
-
+import java.util.{ List => JList, Map => JMap, Collections => JCollections }
 import org.joda.time.DateTime
 
 import org.scalatest.WordSpec
 
 import scala.collection.LinearSeq
+import scala.collection.JavaConverters._
 
 class SaleSpec extends WordSpec {
 
@@ -17,9 +18,9 @@ class SaleSpec extends WordSpec {
   private val AfterABit = new DateTime(Now.getMillis + 10000)
 
   private val TestSale = Sale("name", "sale", "key", Store.Women, Some("description"), new URL("http://www.gilt.com"), Now, Some(AfterABit),
-                              Map.empty[ImageKey, List[Image]],
+                              JCollections.emptyMap[ImageKey, JList[Image]],
                               List(new URL("http://www.gilt.com/products/1/detail.json"),
-                                   new URL("http://www.gilt.com/products/2/detail.json")))
+                                   new URL("http://www.gilt.com/products/2/detail.json")).asJava)
 
   "A Sale" when {
     "constructed" should {
@@ -46,13 +47,13 @@ class SaleSpec extends WordSpec {
       }
 
       "be upcoming if it has not products" in {
-        val actual = TestSale.copy(begins = AfterABit, ends = Some(new DateTime(Now.getMillis + 20000)), products = LinearSeq.empty[URL])
+        val actual = TestSale.copy(begins = AfterABit, ends = Some(new DateTime(Now.getMillis + 20000)), products = JCollections.emptyList[URL])
         assert(actual.isUpcoming)
         assert(!actual.isActive)
       }
 
       "return all products ids as a list of Long" in {
-        expect(List(1, 2)) { TestSale.productIds }
+        expect(List(1, 2)) { TestSale.productIds.asScala }
       }
     }
   }

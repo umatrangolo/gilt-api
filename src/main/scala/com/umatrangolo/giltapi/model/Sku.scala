@@ -2,6 +2,8 @@ package com.umatrangolo.giltapi.model
 
 import com.umatrangolo.giltapi.model.InventoryStatus._
 
+import java.util.{ List => JList, Collections => JCollections }
+
 import scala.beans.BeanProperty
 
 /**
@@ -14,7 +16,7 @@ case class Sku(
   @BeanProperty status: InventoryStatus,
   @BeanProperty msrpPrice: Double,
   @BeanProperty salePrice: Double,
-  @BeanProperty attributes: List[SkuAttribute] = List.empty[SkuAttribute]
+  @BeanProperty attributes: JList[SkuAttribute] = JCollections.emptyList[SkuAttribute]
 ) {
   require(id >= 0, "id can't be negative")
   require(status != null, "status can't be null")

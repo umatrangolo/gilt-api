@@ -3,7 +3,8 @@ package com.umatrangolo.giltapi
 import com.umatrangolo.giltapi.model.Sale
 import com.umatrangolo.giltapi.model.Store._
 
-import scala.collection.LinearSeq
+import java.util.{ List => JList }
+
 import scala.concurrent.Future
 
 /**
@@ -20,7 +21,7 @@ trait Sales {
    *
    * @return a deferred list of all the active Sales.
    */
-  def activeSales: Future[LinearSeq[Sale]]
+  def getActiveSales: Future[JList[Sale]]
 
   /**
    * Fetched active and upcoming Sales for a given store.
@@ -28,21 +29,21 @@ trait Sales {
    * @param store the store to fetch Sales for.
    * @return a deferred list of all the active Sales for the store.
    */
-  def activeSales(store: Store): Future[LinearSeq[Sale]]
+  def getActiveSales(store: Store): Future[JList[Sale]]
 
   /**
    * Fetches only upcoming Sales.
    *
    * @return a deferred list of all the upcoming Sales.
    */
-  def upcomingSales: Future[LinearSeq[Sale]]
+  def getUpcomingSales: Future[JList[Sale]]
 
   /**
    * Fetches only upcoming Sales for the given store.
    *
    * @return a deferred list with all upcoming Sales only for the store.
    */
-  def upcomingSales(store: Store): Future[LinearSeq[Sale]]
+  def getUpcomingSales(store: Store): Future[JList[Sale]]
 
   /**
    * Retrieves details about a given Sale.
@@ -50,5 +51,5 @@ trait Sales {
    * @param saleKey the uniquely identifying key of the Sale
    * @return a deferred optional Sale.
    */
-  def sales(saleKey: String, store: Store): Future[Option[Sale]]
+  def getSale(saleKey: String, store: Store): Future[Option[Sale]]
 }

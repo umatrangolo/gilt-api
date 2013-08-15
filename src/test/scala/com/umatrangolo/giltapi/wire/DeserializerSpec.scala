@@ -9,6 +9,7 @@ import org.joda.time.{ DateTime, DateTimeZone }
 import org.scalatest.WordSpec
 
 import scala.collection.LinearSeq
+import scala.collection.JavaConverters._
 import scala.io.Source
 
 abstract class DeserializerSpec extends WordSpec {
@@ -56,9 +57,9 @@ abstract class DeserializerSpec extends WordSpec {
                       new DateTime("2013-08-02T16:00:00.000Z", DateTimeZone.UTC),
                       Some(new DateTime("2013-08-04T04:00:00.000Z", DateTimeZone.UTC)),
                       Map(
-                        ImageKey(315,295) -> List(Image(new URL("http://cdn1.gilt.com/images/share/uploads/0000/0003/0066/300667726/orig.jpg"),315,295)),
-                        ImageKey(161,110) -> List(Image(new URL("http://cdn1.gilt.com/images/share/uploads/0000/0003/0066/300667587/orig.jpg"),161,110))
-                      ),
+                        ImageKey(315,295) -> List(Image(new URL("http://cdn1.gilt.com/images/share/uploads/0000/0003/0066/300667726/orig.jpg"),315,295)).asJava,
+                        ImageKey(161,110) -> List(Image(new URL("http://cdn1.gilt.com/images/share/uploads/0000/0003/0066/300667587/orig.jpg"),161,110)).asJava
+                      ).asJava,
                       List(
                         new URL("https://api.gilt.com/v1/products/1019421280/detail.json"),
                         new URL("https://api.gilt.com/v1/products/1000047488/detail.json"),
@@ -72,7 +73,7 @@ abstract class DeserializerSpec extends WordSpec {
                         new URL("https://api.gilt.com/v1/products/168468265/detail.json"),
                         new URL("https://api.gilt.com/v1/products/1019421274/detail.json"),
                         new URL("https://api.gilt.com/v1/products/1007338857/detail.json")
-                      )
+                      ).asJava
                     )
 
   val TestProductAsBytes: Array[Byte]
@@ -100,11 +101,11 @@ abstract class DeserializerSpec extends WordSpec {
     ),
     List(
       Sku(2407966,InventoryStatus.ForSale,420.0,149.0,List(
-        SkuAttribute("size","xs"), SkuAttribute("color","black white"))),
+        SkuAttribute("size","xs"), SkuAttribute("color","black white")).asJava),
       Sku(2407967,InventoryStatus.ForSale,420.0,149.0,List(
-        SkuAttribute("size","s"), SkuAttribute("color","black white"))),
+        SkuAttribute("size","s"), SkuAttribute("color","black white")).asJava),
       Sku(2407968,InventoryStatus.ForSale,420.0,149.0,List(
-        SkuAttribute("size","m"), SkuAttribute("color","black white")))),
+        SkuAttribute("size","m"), SkuAttribute("color","black white")).asJava)),
     List(
       Category("Sweaters & Hoodies"),
       Category("Men"),

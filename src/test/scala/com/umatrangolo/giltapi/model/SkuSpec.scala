@@ -1,10 +1,11 @@
 package com.umatrangolo.giltapi.model
 
 import org.scalatest.WordSpec
+import java.util.{ Collections => JCollections }
 
 class SkuSpec extends WordSpec {
 
-  private val TestSku = Sku(1, InventoryStatus.SoldOut, 100, 101, List.empty[SkuAttribute])
+  private val TestSku = Sku(1, InventoryStatus.SoldOut, 100, 101, JCollections.emptyList[SkuAttribute])
   private val TestSkuAttribute = SkuAttribute("age", 13)
 
   "A Sku" when {

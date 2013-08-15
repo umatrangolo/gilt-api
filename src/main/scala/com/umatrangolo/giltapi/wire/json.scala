@@ -81,15 +81,15 @@ private[json] object SaleJson {
     new URL(saleJson.sale_url),
     saleJson.begins,
     Option(saleJson.ends),
-    saleJson.image_urls.asScala.map { case (imageKey, imageJsons) =>
-      (ImageJson.toImageKey(imageKey) -> imageJsons.asScala.map { imageJson =>
-        catching(classOf[MalformedURLException]) opt ImageJson.toImage(imageJson) }.toList.flatten)
-    }.toMap,
+    JCollections.unmodifiableMap(saleJson.image_urls.asScala.map { case (imageKey, imageJsons) =>
+      (ImageJson.toImageKey(imageKey) -> JCollections.unmodifiableList(imageJsons.asScala.map { imageJson =>
+        catching(classOf[MalformedURLException]) opt ImageJson.toImage(imageJson) }.toList.flatten.asJava))
+    }.toMap.asJava),
     Option(saleJson.products).map { ps =>
-      ps.asScala.toList.map {
+      JCollections.unmodifiableList(ps.asScala.toList.map {
         catching(classOf[MalformedURLException]) opt new URL(_)
-      }.flatten
-    }.getOrElse(LinearSeq.empty[URL])
+      }.flatten.asJava)
+    }.getOrElse(JCollections.emptyList[URL])
   )
 }
 
@@ -175,7 +175,7 @@ private[json] object SkuJson {
     status = InventoryStatusJson.toInventoryStatus(skuJson.inventory_status),
     msrpPrice = skuJson.msrp.toDouble,
     salePrice = skuJson.sale.toDouble,
-    attributes = skuJson.attributes.asScala.map { SkuAttributeJson.toSkuAttribute }.toList
+    attributes = JCollections.unmodifiableList(skuJson.attributes.asScala.map { SkuAttributeJson.toSkuAttribute }.toList.asJava)
   )
 }
 

@@ -4,7 +4,8 @@ import com.umatrangolo.giltapi.model.Category
 import com.umatrangolo.giltapi.model.Product
 import com.umatrangolo.giltapi.model.Store._
 
-import scala.collection.LinearSeq
+import java.util.{ List => JList }
+
 import scala.concurrent.Future
 
 /**
@@ -21,7 +22,7 @@ trait Products {
    * @param id unique identifier the Product.
    * @return a deferred optional Product.
    */
-  def products(id: Long): Future[Option[Product]]
+  def getProduct(id: Long): Future[Option[Product]]
 
   /**
    * Fetches all Product categories.
@@ -31,5 +32,5 @@ trait Products {
    *
    * @return a deferred list of categories.
    */
-  def allCategories: Future[LinearSeq[Category]]
+  def getAllCategories: Future[JList[Category]]
 }
