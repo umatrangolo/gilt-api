@@ -1,7 +1,7 @@
 package com.umatrangolo.giltapi
 
 import com.umatrangolo.giltapi.model.Sale
-import com.umatrangolo.giltapi.model.Store._
+import com.umatrangolo.giltapi.model.Store
 
 import java.util.{ List => JList }
 

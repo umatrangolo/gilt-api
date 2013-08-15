@@ -8,7 +8,7 @@ import com.ning.http.client.ListenableFuture
 import com.ning.http.client.Response
 
 import com.umatrangolo.giltapi.client.Client
-import com.umatrangolo.giltapi.model.Store._
+import com.umatrangolo.giltapi.model.Store
 import com.umatrangolo.giltapi.model._
 import com.umatrangolo.giltapi.wire._
 import com.umatrangolo.giltapi.{ Sales, Products }
@@ -57,6 +57,7 @@ private[client] object NingProvider extends NingProvider {
       ps.close
     }
 
+    logger.debug("Properties are:\n" + props.toString)
     props
   }
 
@@ -96,7 +97,7 @@ private[client] class NingSalesClientImpl(apiKey: String, deserializer: Deserial
   override def getUpcomingSales(store: Store): Future[JList[Sale]] = fetchUpcomingSales(Option(store)).map { ls => unmodifiableList(ls.asJava) }
 
   override def getSale(saleKey: String, store: Store): Future[Option[Sale]] = {
-    val request = "https://api.gilt.com/v1/sales/%s/%s/detail.json?apikey=%s".format(store, saleKey, apiKey)
+    val request = "https://api.gilt.com/v1/sales/%s/%s/detail.json?apikey=%s".format(store.getKey, saleKey, apiKey)
 
     provider.asyncClient.prepareGet(request.toString).execute(new AsyncCompletionHandlerImplWithStdErrorHandling[Option[Sale]](
       on200 = { r =>
@@ -114,7 +115,7 @@ private[client] class NingSalesClientImpl(apiKey: String, deserializer: Deserial
   protected def fetchSales(upcoming: Boolean = false)(store: Option[Store] = None): Future[LinearSeq[Sale]] = {
     val request = new StringBuilder("https://api.gilt.com/v1/sales/")
 
-    store.foreach { s => request.append(s.toString) }
+    store.foreach { s => request.append(s.getKey) }
     request.append("/").append({if (upcoming) "upcoming" else "active"})
 
     request.append(".json?apikey=%s".format(apiKey))

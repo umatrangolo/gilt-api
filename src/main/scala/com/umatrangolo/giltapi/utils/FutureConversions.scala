@@ -9,6 +9,7 @@ import scala.concurrent.{ Future, Promise }
 
 import scala.language.implicitConversions
 
+// TODO revisit NingListenableFuture to scala.concurrent.Future conversion
 object FutureConversions {
   private[this] val executor = java.util.concurrent.Executors.newCachedThreadPool(new ThreadFactoryBuilder()
     .setDaemon(true)

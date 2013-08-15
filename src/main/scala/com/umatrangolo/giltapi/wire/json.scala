@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.joda.JodaModule
 
-import com.umatrangolo.giltapi.model.InventoryStatus._
-import com.umatrangolo.giltapi.model.Store._
+import com.umatrangolo.giltapi.model.InventoryStatus
+import com.umatrangolo.giltapi.model.Store
 import com.umatrangolo.giltapi.model._
 import com.umatrangolo.giltapi.wire.Deserializer
 
@@ -43,17 +43,17 @@ private[wire] object JsonDeserializer extends Deserializer {
 }
 
 private[json] object StoreJson {
-  private[this] val ValueSet = Store.values
+  private[this] val StoreMap = Store.values.map { s => (s.getKey -> s) }.toMap
 
-  def toStore(storeJson: String): Store = Option(storeJson).flatMap { s => ValueSet.find { _.toString == s } }.getOrElse {
+  def toStore(storeJson: String): Store = Option(storeJson).flatMap { StoreMap.get(_) }.getOrElse {
     throw new RuntimeException("Unsupported store (was %s)".format(storeJson))
   }
 }
 
 private[json] object InventoryStatusJson {
-  private[this] val ValueSet = InventoryStatus.values
+  private[this] val InventoryStatusMap = InventoryStatus.values.map { s => (s.getKey -> s) }.toMap
 
-  def toInventoryStatus(inventoryStatusJson: String): InventoryStatus = Option(inventoryStatusJson).flatMap { s => ValueSet.find { _.toString == s } }
+  def toInventoryStatus(inventoryStatusJson: String): InventoryStatus = Option(inventoryStatusJson).flatMap { InventoryStatusMap.get(_) }
     .getOrElse { throw new RuntimeException("Unsupported inventory status (was %s)".format(inventoryStatusJson)) }
 }
 

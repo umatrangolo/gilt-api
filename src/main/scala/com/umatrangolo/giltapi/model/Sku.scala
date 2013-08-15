@@ -1,7 +1,5 @@
 package com.umatrangolo.giltapi.model
 
-import com.umatrangolo.giltapi.model.InventoryStatus._
-
 import java.util.{ List => JList, Collections => JCollections }
 
 import scala.beans.BeanProperty
