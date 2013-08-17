@@ -1,5 +1,7 @@
 package com.umatrangolo.giltapi
 
+import com.google.common.base.Optional
+
 import com.umatrangolo.giltapi.model.Category
 import com.umatrangolo.giltapi.model.Product
 import com.umatrangolo.giltapi.model.Store._
@@ -22,7 +24,7 @@ trait Products {
    * @param id unique identifier the Product.
    * @return a deferred optional Product.
    */
-  def getProduct(id: Long): Future[Option[Product]]
+  def getProduct(id: Long): Future[Optional[Product]]
 
   /**
    * Fetches all Product categories.

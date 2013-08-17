@@ -1,14 +1,15 @@
 package com.umatrangolo.giltapi.example
 
-import com.umatrangolo.giltapi.{ Sales, Products }
 import com.umatrangolo.giltapi.client.GiltClientFactory
 import com.umatrangolo.giltapi.model._
+import com.umatrangolo.giltapi.{ Sales, Products }
+
+import java.util.{ List => JList }
 
 import scala.collection.JavaConversions._
 import scala.concurrent._
 import scala.concurrent.duration._
-
-import java.util.{ List => JList }
+import scala.language.postfixOps
 
 object SaleListingApp extends App {
   println("**** Fetching sale listing ... ")

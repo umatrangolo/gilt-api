@@ -8,14 +8,12 @@ import com.umatrangolo.giltapi.model.Product;
 import com.umatrangolo.giltapi.model.Store;
 
 import scala.concurrent.Await;
-import scala.Option;
 
 import static com.umatrangolo.giltapi.client.GiltClientFactory.*;
 import scala.concurrent.duration.Duration;
 
 import java.util.List;
 
-// TODO Option -> Guava Optional
 // TODO scala.concurrent.Future -> Guava ListenableFuture (using a converter)
 public class SaleListingApp {
     public static void main(String[] args) throws Exception {
@@ -57,5 +55,7 @@ public class SaleListingApp {
                 System.out.println("---- Product with id " + product);
             }
         }
+
+        System.out.println("======== BYE ========");
     }
 }

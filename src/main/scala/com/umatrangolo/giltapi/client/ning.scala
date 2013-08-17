@@ -1,5 +1,7 @@
 package com.umatrangolo.giltapi.client.ning
 
+import com.google.common.base.Optional
+
 import com.ning.http.client.AsyncCompletionHandler
 import com.ning.http.client.AsyncHttpClient
 import com.ning.http.client.AsyncHttpClientConfig._
@@ -13,6 +15,10 @@ import com.umatrangolo.giltapi.model._
 import com.umatrangolo.giltapi.wire._
 import com.umatrangolo.giltapi.{ Sales, Products }
 
+import java.io.IOException
+import java.util.Collections._
+import java.util.{ Properties, List => JList }
+
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -21,11 +27,6 @@ import scala.collection.LinearSeq
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.control.Exception._
-
-import java.io.IOException
-
-import java.util.Collections._
-import java.util.{ Properties, List => JList }
 
 private[ning] object NingSalesClientImpl {
   val logger = LoggerFactory.getLogger(classOf[NingSalesClientImpl])
@@ -96,19 +97,19 @@ private[client] class NingSalesClientImpl(apiKey: String, deserializer: Deserial
 
   override def getUpcomingSales(store: Store): Future[JList[Sale]] = fetchUpcomingSales(Option(store)).map { ls => unmodifiableList(ls.asJava) }
 
-  override def getSale(saleKey: String, store: Store): Future[Option[Sale]] = {
+  override def getSale(saleKey: String, store: Store): Future[Optional[Sale]] = {
     val request = "https://api.gilt.com/v1/sales/%s/%s/detail.json?apikey=%s".format(store.getKey, saleKey, apiKey)
 
-    provider.asyncClient.prepareGet(request.toString).execute(new AsyncCompletionHandlerImplWithStdErrorHandling[Option[Sale]](
+    provider.asyncClient.prepareGet(request.toString).execute(new AsyncCompletionHandlerImplWithStdErrorHandling[Optional[Sale]](
       on200 = { r =>
         try {
-          Option(deserializer.deserialize[Sale](r.getResponseBodyAsBytes()))
+          Optional.of(deserializer.deserialize[Sale](r.getResponseBodyAsBytes()))
         } catch {
           case e: Exception => throw new RuntimeException("Error while deserializing service response. Was:\nRequest:%s\nResponse:%s\n"
             .format(request.toString, r.getResponseBody), e)
         }
       },
-      on404 = { r => None }
+      on404 = { r => Optional.absent[Sale] }
     ))
   }
 
@@ -165,19 +166,19 @@ private[client] class NingProductsClientImpl(apiKey: String, deserializer: Deser
     ))
   }
 
-  override def getProduct(id: Long): Future[Option[Product]] = {
+  override def getProduct(id: Long): Future[Optional[Product]] = {
     val request = "https://api.gilt.com/v1/products/%s/detail.json?apikey=%s".format(id, apiKey)
 
-    provider.asyncClient.prepareGet(request.toString).execute(new AsyncCompletionHandlerImplWithStdErrorHandling[Option[Product]](
+    provider.asyncClient.prepareGet(request.toString).execute(new AsyncCompletionHandlerImplWithStdErrorHandling[Optional[Product]](
       on200 = { r =>
         try {
-          Option(deserializer.deserialize[Product](r.getResponseBodyAsBytes))
+          Optional.of(deserializer.deserialize[Product](r.getResponseBodyAsBytes))
         } catch {
           case e: Exception => throw new RuntimeException("Error while deserializing service response. Was:\nRequest:%s\nResponse:%s\n"
             .format(request.toString, r.getResponseBody), e)
         }
       },
-      on404 = { r => None }
+      on404 = { r => Optional.absent[Product] }
     ))
   }
 }

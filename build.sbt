@@ -19,7 +19,8 @@ libraryDependencies ++= Seq(
                     "org.joda" % "joda-convert" % "1.2",
                     "com.ning" % "async-http-client" % "1.7.17",
                     "org.slf4j" % "slf4j-api" % "1.7.5",
-                    "ch.qos.logback" % "logback-classic" % "1.0.13"
+                    "ch.qos.logback" % "logback-classic" % "1.0.13",
+                    "com.google.code.findbugs" % "jsr305" % "1.3.9"
                     )
 
 libraryDependencies += "org.scalatest" % "scalatest_2.10" % "1.9.1" % "test"
@@ -33,13 +34,15 @@ resolvers ++= Seq(
 
 publishMavenStyle := true
 
-publishTo <<= version { (v: String) =>
-  val nexus = "https://oss.sonatype.org/"
-  if (v.trim.endsWith("SNAPSHOT"))
-    Some("snapshots" at nexus + "content/repositories/snapshots")
-  else
-    Some("releases"  at nexus + "/service/local/staging/deploy/maven2")
-}
+publishTo := Some(Resolver.file("file",  new File(Path.userHome.absolutePath+"/.m2/repository")))
+
+//publishTo <<= version { (v: String) =>
+// val nexus = "https://oss.sonatype.org/"
+//  if (v.trim.endsWith("SNAPSHOT"))
+//    Some("snapshots" at nexus + "content/repositories/snapshots")
+//  else
+//    Some("releases"  at nexus + "/service/local/staging/deploy/maven2")
+//}
 
 publishArtifact in Test := false
 

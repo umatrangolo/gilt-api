@@ -175,7 +175,9 @@ private[json] object SkuJson {
     status = InventoryStatusJson.toInventoryStatus(skuJson.inventory_status),
     msrpPrice = skuJson.msrp.toDouble,
     salePrice = skuJson.sale.toDouble,
-    attributes = JCollections.unmodifiableList(skuJson.attributes.asScala.map { SkuAttributeJson.toSkuAttribute }.toList.asJava)
+    attributes = Option(skuJson.attributes).map { attrs =>
+      JCollections.unmodifiableList(attrs.asScala.map { SkuAttributeJson.toSkuAttribute }.toList.asJava)
+    }.getOrElse(JCollections.emptyList[SkuAttribute])
   )
 }
 

@@ -1,5 +1,7 @@
 package com.umatrangolo.giltapi
 
+import com.google.common.base.Optional
+
 import com.umatrangolo.giltapi.model.Sale
 import com.umatrangolo.giltapi.model.Store
 
@@ -51,5 +53,5 @@ trait Sales {
    * @param saleKey the uniquely identifying key of the Sale
    * @return a deferred optional Sale.
    */
-  def getSale(saleKey: String, store: Store): Future[Option[Sale]]
+  def getSale(saleKey: String, store: Store): Future[Optional[Sale]]
 }
