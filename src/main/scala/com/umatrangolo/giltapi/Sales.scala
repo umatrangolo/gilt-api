@@ -1,13 +1,12 @@
 package com.umatrangolo.giltapi
 
 import com.google.common.base.Optional
+import com.google.common.util.concurrent.ListenableFuture
 
 import com.umatrangolo.giltapi.model.Sale
 import com.umatrangolo.giltapi.model.Store
 
 import java.util.{ List => JList }
-
-import scala.concurrent.Future
 
 /**
  * Main type to fetch active/upcoming Sales.
@@ -23,7 +22,7 @@ trait Sales {
    *
    * @return a deferred list of all the active Sales.
    */
-  def getActiveSales: Future[JList[Sale]]
+  def getActiveSales: ListenableFuture[JList[Sale]]
 
   /**
    * Fetched active and upcoming Sales for a given store.
@@ -31,21 +30,21 @@ trait Sales {
    * @param store the store to fetch Sales for.
    * @return a deferred list of all the active Sales for the store.
    */
-  def getActiveSales(store: Store): Future[JList[Sale]]
+  def getActiveSales(store: Store): ListenableFuture[JList[Sale]]
 
   /**
    * Fetches only upcoming Sales.
    *
    * @return a deferred list of all the upcoming Sales.
    */
-  def getUpcomingSales: Future[JList[Sale]]
+  def getUpcomingSales: ListenableFuture[JList[Sale]]
 
   /**
    * Fetches only upcoming Sales for the given store.
    *
    * @return a deferred list with all upcoming Sales only for the store.
    */
-  def getUpcomingSales(store: Store): Future[JList[Sale]]
+  def getUpcomingSales(store: Store): ListenableFuture[JList[Sale]]
 
   /**
    * Retrieves details about a given Sale.
@@ -53,5 +52,5 @@ trait Sales {
    * @param saleKey the uniquely identifying key of the Sale
    * @return a deferred optional Sale.
    */
-  def getSale(saleKey: String, store: Store): Future[Optional[Sale]]
+  def getSale(saleKey: String, store: Store): ListenableFuture[Optional[Sale]]
 }

@@ -21,7 +21,7 @@ object SaleListingApp extends App {
 
   // active sales
   println("======== ACTIVE SALES ========")
-  val activeSales: JList[Sale] = Await.result(salesClient.getActiveSales, 30 seconds)
+  val activeSales: JList[Sale] = salesClient.getActiveSales.get()
   activeSales.groupBy { _.store }.foreach { case (store, sales) =>
     println(">> Store: " + store)
     sales.foreach { sale => println(">> " + sale.name) }
@@ -29,7 +29,7 @@ object SaleListingApp extends App {
 
   // upcoming sales
   println("======== UPCOMING SALES ========")
-  val upcomingSales: JList[Sale] = Await.result(salesClient.getUpcomingSales, 30 seconds)
+  val upcomingSales: JList[Sale] = salesClient.getUpcomingSales.get()
   upcomingSales.groupBy { _.store }.foreach { case (store, sales) =>
     println(">> Store: " + store)
     sales.foreach { sale => println(">> " + sale.name) }
@@ -37,10 +37,10 @@ object SaleListingApp extends App {
 
   // details about a single sale in the Women store
   println("======== FIRST SALE FOR WOMEN ========")
-  val salesForWomen: JList[Sale] = Await.result(salesClient.getActiveSales(Store.Women), 30 seconds)
+  val salesForWomen: JList[Sale] = salesClient.getActiveSales(Store.Women).get()
   salesForWomen.headOption.foreach { sale =>
     println(">> Getting details about " + sale.name)
-    val saleDetails = Await.result(salesClient.getSale(sale.key, Store.Women), 30 seconds)
+    val saleDetails = salesClient.getSale(sale.key, Store.Women).get()
     println(">> [%s] is \n%s".format(sale.key, saleDetails))
   }
 
@@ -52,7 +52,7 @@ object SaleListingApp extends App {
     println(">> last sale in the Women store is " + sale.name)
     sale.productIds.headOption.foreach { pid =>
       println("\n\n**** Getting info about Product with id: " + pid)
-      val product: Optional[Product] = Await.result(productClient.getProduct(pid), 30 seconds)
+      val product: Optional[Product] = productClient.getProduct(pid).get()
       product.foreach { p => println("---- Product with id %s is: \n%s".format(pid, p)) }
     }
   }

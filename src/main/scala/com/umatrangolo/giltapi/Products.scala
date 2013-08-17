@@ -1,14 +1,13 @@
 package com.umatrangolo.giltapi
 
 import com.google.common.base.Optional
+import com.google.common.util.concurrent.ListenableFuture
 
 import com.umatrangolo.giltapi.model.Category
 import com.umatrangolo.giltapi.model.Product
 import com.umatrangolo.giltapi.model.Store._
 
 import java.util.{ List => JList }
-
-import scala.concurrent.Future
 
 /**
  * Type used to fetch Products.
@@ -24,7 +23,7 @@ trait Products {
    * @param id unique identifier the Product.
    * @return a deferred optional Product.
    */
-  def getProduct(id: Long): Future[Optional[Product]]
+  def getProduct(id: Long): ListenableFuture[Optional[Product]]
 
   /**
    * Fetches all Product categories.
@@ -34,5 +33,5 @@ trait Products {
    *
    * @return a deferred list of categories.
    */
-  def getAllCategories: Future[JList[Category]]
+  def getAllCategories: ListenableFuture[JList[Category]]
 }
