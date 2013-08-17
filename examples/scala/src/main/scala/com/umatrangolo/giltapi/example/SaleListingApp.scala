@@ -1,5 +1,7 @@
 package com.umatrangolo.giltapi.example
 
+import com.google.common.base.Optional
+
 import com.umatrangolo.giltapi.client.GiltClientFactory
 import com.umatrangolo.giltapi.model._
 import com.umatrangolo.giltapi.{ Sales, Products }
@@ -42,14 +44,16 @@ object SaleListingApp extends App {
     println(">> [%s] is \n%s".format(sale.key, saleDetails))
   }
 
+  import com.umatrangolo.giltapi.utils.GuavaConversions._
+
   // browsing a product
   println("======== BROWSING PRODUCT ========")
   salesForWomen.headOption.foreach { sale =>
     println(">> last sale in the Women store is " + sale.name)
     sale.productIds.headOption.foreach { pid =>
       println("\n\n**** Getting info about Product with id: " + pid)
-      val product = Await.result(productClient.getProduct(pid), 30 seconds)
-      println("---- Product with id %s is: \n%s".format(pid, product))
+      val product: Optional[Product] = Await.result(productClient.getProduct(pid), 30 seconds)
+      product.foreach { p => println("---- Product with id %s is: \n%s".format(pid, p)) }
     }
   }
 
