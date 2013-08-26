@@ -5,7 +5,7 @@ name := "gilt-api"
 
 organization := "com.umatrangolo"
 
-version := "0.0.2"
+version := "0.0.3-SNAPSHOT"
 
 scalaVersion in ThisBuild := "2.10.2"
 
@@ -72,21 +72,4 @@ pomExtra := (
     <url>http://umatrangolo.com</url>
   </developer>
 </developers>
-<build>
-  <plugins>
-    <plugin>
-      <groupId>org.apache.maven.plugins</groupId>
-      <artifactId>maven-gpg-plugin</artifactId>
-      <executions>
-        <execution>
-          <id>sign-artifacts</id>
-          <phase>verify</phase>
-          <goals>
-            <goal>sign</goal>
-          </goals>
-        </execution>
-      </executions>
-    </plugin>
-  </plugins>
-</build>
 )
