@@ -34,6 +34,7 @@ resolvers ++= Seq(
 
 publishMavenStyle := true
 
+// for development
 //publishTo := Some(Resolver.file("file",  new File(Path.userHome.absolutePath+"/.m2/repository")))
 
 publishTo <<= version { (v: String) =>
@@ -44,6 +45,8 @@ publishTo <<= version { (v: String) =>
     Some("releases"  at nexus + "/service/local/staging/deploy/maven2")
 }
 
+credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")
+
 publishArtifact in Test := false
 
 licenses := Seq("Apache License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0"))
@@ -53,15 +56,37 @@ homepage := Some(url("https://github.com/umatrangolo/gilt-api"))
 pomIncludeRepository := { _ => false }
 
 pomExtra := (
-  <scm>
-    <url>git@github.com:umatrangolo/gilt-api.git</url>
-    <connection>scm:git:git@github.com:umatrangolo/gilt-api.git</connection>
-  </scm>
-  <developers>
-    <developer>
-      <id>umatrangolo</id>
-      <name>Ugo Matrangolo</name>
-      <url>http://umatrangolo.com</url>
-    </developer>
-  </developers>
+<parent>
+  <groupId>org.sonatype.oss</groupId>
+  <artifactId>oss-parent</artifactId>
+  <version>7</version>
+</parent>
+<scm>
+  <url>git@github.com:umatrangolo/gilt-api.git</url>
+  <connection>scm:git:git@github.com:umatrangolo/gilt-api.git</connection>
+</scm>
+<developers>
+  <developer>
+    <id>umatrangolo</id>
+    <name>Ugo Matrangolo</name>
+    <url>http://umatrangolo.com</url>
+  </developer>
+</developers>
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-gpg-plugin</artifactId>
+      <executions>
+        <execution>
+          <id>sign-artifacts</id>
+          <phase>verify</phase>
+          <goals>
+            <goal>sign</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+  </plugins>
+</build>
 )
