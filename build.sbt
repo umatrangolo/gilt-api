@@ -5,7 +5,7 @@ name := "gilt-api"
 
 organization := "com.umatrangolo"
 
-version := "0.0.3-SNAPSHOT"
+version := "0.0.3"
 
 scalaVersion in ThisBuild := "2.10.2"
 
