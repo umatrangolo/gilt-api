@@ -18,7 +18,7 @@
     <dependency>
       <groupId>com.umatrangolo</groupId>
       <artifactId>gilt-api_2.10</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>0.0.3</version>
     </dependency>
   </dependencies>
 
