@@ -11,7 +11,7 @@ import org.joda.time.DateTime
 import scala.beans.BeanProperty
 import scala.collection.JavaConverters._
 
-/** A set of Products available to sell at discounted prices */
+/** A set of Products available at discounted prices */
 case class Sale(
   @BeanProperty name: String,
   @BeanProperty sale: String,
@@ -42,6 +42,7 @@ case class Sale(
   def isUpcoming = products.isEmpty
   def isActive = !isUpcoming
 
+  // TODO looks shaky: review.
   @BeanProperty lazy val productIds: JList[JLong] = JCollections.unmodifiableList(products.asScala.map { url =>
     val split = url.toString.split("products/")(1)
     JLong.valueOf(split.substring(0, split.indexOf("/")))

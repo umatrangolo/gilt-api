@@ -13,7 +13,8 @@ import java.util.{ List => JList }
  * Type used to fetch Products.
  *
  * An impl of this type will provide a non blocking client to fetch
- * Products from the GILT API endpoints.
+ * Products from the GILT API endpoints. The implmentation is non blocking
+ * and will always return a composable deferred result.
  */
 trait Products {
 
